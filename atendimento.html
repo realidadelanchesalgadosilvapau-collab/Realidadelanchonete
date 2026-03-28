@@ -114,7 +114,18 @@ const db = getDatabase(app);
 let total = 0;
 let pedidos = [];
 
+let produtos = [];
 
+onValue(ref(db, "produtos"), (snapshot) => {
+  produtos = [];
+
+  snapshot.forEach(item => {
+    produtos.push(item.val());
+  });
+
+  carregarProdutos();
+});
+  
 window.carregarProdutos = function() {
   let select = document.getElementById("produto");
   select.innerHTML = "";
