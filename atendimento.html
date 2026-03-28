@@ -1,18 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<title>Atendimento</title>
-</head>
-<body>
-
-<h2>🧾 Novo Pedido</h2>
-
-<input id="cliente" placeholder="Cliente"><br><br>
-<input id="pedido" placeholder="Ex: X-Burger + Coca"><br><br>
-
-<button onclick="enviar()">Enviar Pedido</button>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
@@ -32,25 +17,35 @@ const db = getDatabase(app);
 
 window.enviar = function() {
   let cliente = document.getElementById("cliente").value;
-  let pedido = document.getElementById("pedido").value;
 
-  if (!cliente || !pedido) {
-    alert("Preencha tudo!");
+  if (!cliente) {
+    alert("Digite o nome do cliente");
     return;
   }
 
+  if (pedidos.length === 0) {
+    alert("Adicione itens");
+    return;
+  }
+
+  let resumo = pedidos.map(p =>
+    `${p.nome} (${p.obs || "sem observação"})`
+  ).join("\n");
+
+  // 🔥 ENVIA PRO FIREBASE
   push(ref(db, "pedidos"), {
     cliente: cliente,
-    pedido: pedido,
+    pedido: resumo,
+    total: total,
     hora: new Date().toLocaleTimeString()
   });
 
-  alert("Pedido enviado!");
+  alert("📤 Pedido enviado para cozinha!");
 
+  // reset
+  pedidos = [];
+  total = 0;
+  atualizarTela();
   document.getElementById("cliente").value = "";
-  document.getElementById("pedido").value = "";
 };
 </script>
-
-</body>
-</html>
