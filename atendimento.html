@@ -1,3 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Pedido Lanchonete</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+}
+
+.container {
+  max-width: 400px;
+  margin: auto;
+  background: #fff;
+  padding: 15px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+textarea {
+  resize: none;
+  height: 60px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: #e53935;
+  color: white;
+  border: none;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.secondary {
+  background: #555;
+}
+
+.item {
+  border-bottom: 1px solid #eee;
+  padding: 5px 0;
+}
+
+.total {
+  font-weight: bold;
+  color: red;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>🍔 Novo Pedido</h2>
+
+<input type="text" id="cliente" placeholder="Nome do cliente">
+
+<select id="produto"></select>
+
+<textarea id="obs" placeholder="Ex: sem cebola, bem passado..."></textarea>
+
+<button onclick="adicionar()">Adicionar Item</button>
+
+<hr>
+
+<div id="lista"></div>
+
+<hr>
+
+<div class="total">
+  Total: <span id="total">R$ 0</span>
+</div>
+
+<br>
+
+<button onclick="enviar()">📤 Enviar para Cozinha</button>
+
+</div>
+
+<!-- 🔥 FIREBASE + SISTEMA -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
@@ -14,6 +101,61 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
+let total = 0;
+let pedidos = [];
+
+let produtos = [
+  {nome: "X-Burger", preco: 18},
+  {nome: "X-Salada", preco: 20},
+  {nome: "Coca-Cola", preco: 6},
+  {nome: "Guaraná", preco: 8}
+];
+
+window.carregarProdutos = function() {
+  let select = document.getElementById("produto");
+  select.innerHTML = "";
+
+  produtos.forEach((p, i) => {
+    select.innerHTML += `<option value="${i}">
+      ${p.nome} - R$${p.preco}
+    </option>`;
+  });
+}
+
+window.adicionar = function() {
+  let index = document.getElementById("produto").value;
+  let obs = document.getElementById("obs").value;
+
+  let produto = produtos[index];
+
+  pedidos.push({
+    nome: produto.nome,
+    preco: produto.preco,
+    obs: obs
+  });
+
+  total += produto.preco;
+  document.getElementById("obs").value = "";
+
+  atualizarTela();
+}
+
+function atualizarTela() {
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  pedidos.forEach(item => {
+    lista.innerHTML += `
+      <div class="item">
+        <strong>${item.nome}</strong> - R$${item.preco}
+        <br><small>${item.obs || ""}</small>
+      </div>
+    `;
+  });
+
+  document.getElementById("total").innerText = "R$ " + total;
+}
 
 window.enviar = function() {
   let cliente = document.getElementById("cliente").value;
@@ -32,7 +174,6 @@ window.enviar = function() {
     `${p.nome} (${p.obs || "sem observação"})`
   ).join("\n");
 
-  // 🔥 ENVIA PRO FIREBASE
   push(ref(db, "pedidos"), {
     cliente: cliente,
     pedido: resumo,
@@ -40,12 +181,16 @@ window.enviar = function() {
     hora: new Date().toLocaleTimeString()
   });
 
-  alert("📤 Pedido enviado para cozinha!");
+  alert("Pedido enviado!");
 
-  // reset
   pedidos = [];
   total = 0;
   atualizarTela();
   document.getElementById("cliente").value = "";
-};
+}
+
+carregarProdutos();
 </script>
+
+</body>
+</html>
