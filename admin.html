@@ -15,7 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🔥 SALVAR PRODUTO
+// SALVAR PRODUTO
 window.salvar = function() {
   let nome = document.getElementById("nome").value;
   let preco = parseFloat(document.getElementById("preco").value);
@@ -37,10 +37,10 @@ window.salvar = function() {
   document.getElementById("descricao").value = "";
 }
 
-// 🔥 LISTAR PRODUTOS
+// LISTAR PRODUTOS
 onValue(ref(db, "produtos"), (snapshot) => {
   let lista = document.getElementById("lista");
-  lista.innerHTML = ""; // limpa antes
+  lista.innerHTML = "";
 
   snapshot.forEach(item => {
     let p = item.val();
@@ -51,21 +51,25 @@ onValue(ref(db, "produtos"), (snapshot) => {
         <strong>${p.nome}</strong> - R$ ${p.preco}
         <br><small>${p.descricao || ""}</small>
 
-        <button onclick="editar('${id}', '${p.nome}', '${p.preco}', \`${p.descricao || ""}\`)">✏️ Editar</button>
+        <button onclick="editar('${id}', '${p.nome}', '${p.preco}', \`${p.descricao || ""}\`)">
+          ✏️ Editar
+        </button>
 
-        <button class="delete" onclick="deletar('${id}')">Excluir</button>
+        <button class="delete" onclick="deletar('${id}')">
+          Excluir
+        </button>
       </div>
     `;
   });
 });
 
-// 🔥 DELETAR
+// DELETAR
 window.deletar = function(id) {
   if (!confirm("Excluir produto?")) return;
   remove(ref(db, "produtos/" + id));
 }
 
-// 🔥 EDITAR
+// EDITAR
 window.editar = function(id, nome, preco, descricao) {
 
   let novoNome = prompt("Editar nome:", nome);
@@ -82,5 +86,6 @@ window.editar = function(id, nome, preco, descricao) {
     preco: parseFloat(novoPreco),
     descricao: novaDescricao
   });
+
 }
 </script>
