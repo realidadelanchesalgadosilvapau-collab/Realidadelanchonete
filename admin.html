@@ -118,6 +118,25 @@ onValue(ref(db, "produtos"), (snapshot) => {
 window.deletar = function(id) {
   if (!confirm("Excluir produto?")) return;
   remove(ref(db, "produtos/" + id));
+
+window.editar = function(id, nome, preco, descricao) {
+
+  let novoNome = prompt("Editar nome:", nome);
+  if (novoNome === null) return;
+
+  let novoPreco = prompt("Editar preço:", preco);
+  if (novoPreco === null) return;
+
+  let novaDescricao = prompt("Editar descrição:", descricao);
+  if (novaDescricao === null) return;
+
+  update(ref(db, "produtos/" + id), {
+    nome: novoNome,
+    preco: parseFloat(novoPreco),
+    descricao: novaDescricao
+  });
+
+}
 }
 </script>
 
