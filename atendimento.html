@@ -180,6 +180,15 @@ window.cadastrar = function() {
     return;
   }
 
+  push(ref(db, "produtos"), {
+    nome: nome,
+    preco: preco
+  });
+
+  document.getElementById("novoNome").value = "";
+  document.getElementById("novoPreco").value = "";
+}
+
   produtos.push({nome, preco});
 
   document.getElementById("novoNome").value = "";
