@@ -50,7 +50,7 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
   div.innerHTML = `
     <strong>👤 ${p.cliente}</strong><br>
     🕒 ${p.hora}<br><br>
-    ${p.pedido}
+  ${p.pedido.replace(/\n/g, "<br>")}
   `;
 
   lista.prepend(div);
