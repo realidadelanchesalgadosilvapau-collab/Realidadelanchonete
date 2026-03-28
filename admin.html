@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Admin - Produtos</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #222;
+  color: #fff;
+}
+
+.container {
+  max-width: 400px;
+  margin: auto;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #4caf50;
+  border: none;
+  color: white;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.produto {
+  background: #333;
+  padding: 10px;
+  margin-bottom: 5px;
+}
+
+.delete {
+  background: red;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>⚙️ Gerenciar Produtos</h2>
+
+<input type="text" id="nome" placeholder="Nome do produto">
+<input type="number" id="preco" placeholder="Preço">
+
+<button onclick="salvar()">➕ Salvar Produto</button>
+
+<hr>
+
+<div id="lista"></div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.salvar = function() {
+  let nome = document.getElementById("nome").value;
+  let preco = parseFloat(document.getElementById("preco").value);
+
+  if (!nome || !preco) {
+    alert("Preencha tudo!");
+    return;
+  }
+
+  push(ref(db, "produtos"), {
+    nome: nome,
+    preco: preco
+  });
+
+  document.getElementById("nome").value = "";
+  document.getElementById("preco").value = "";
+}
+
+onValue(ref(db, "produtos"), (snapshot) => {
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  snapshot.forEach(item => {
+    let p = item.val();
+    let id = item.key;
+
+    lista.innerHTML += `
+      <div class="produto">
+        ${p.nome} - R$ ${p.preco}
+        <button class="delete" onclick="deletar('${id}')">Excluir</button>
+      </div>
+    `;
+  });
+});
+
+window.deletar = function(id) {
+  if (!confirm("Excluir produto?")) return;
+  remove(ref(db, "produtos/" + id));
+}
+</script>
+
+</body>
+</html>
