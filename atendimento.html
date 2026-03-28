@@ -1,20 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Atendimento</title>
+</head>
+<body>
+
+<h2>🧾 Novo Pedido</h2>
+
+<input id="cliente" placeholder="Cliente"><br><br>
+<input id="pedido" placeholder="Ex: X-Burger + Coca"><br><br>
+
+<button onclick="enviar()">Enviar Pedido</button>
+
 <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
-    authDomain: "realidade-60bdb.firebaseapp.com",
-    databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
-    projectId: "realidade-60bdb",
-    storageBucket: "realidade-60bdb.firebasestorage.app",
-    messagingSenderId: "510520738222",
-    appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.enviar = function() {
+  let cliente = document.getElementById("cliente").value;
+  let pedido = document.getElementById("pedido").value;
+
+  if (!cliente || !pedido) {
+    alert("Preencha tudo!");
+    return;
+  }
+
+  push(ref(db, "pedidos"), {
+    cliente: cliente,
+    pedido: pedido,
+    hora: new Date().toLocaleTimeString()
+  });
+
+  alert("Pedido enviado!");
+
+  document.getElementById("cliente").value = "";
+  document.getElementById("pedido").value = "";
+};
 </script>
+
+</body>
+</html>
