@@ -102,19 +102,16 @@ window.salvar = function() {
 
 onValue(ref(db, "produtos"), (snapshot) => {
   let lista = document.getElementById("lista");
-  lista.innerHTML = "";
+ lista.innerHTML += `
+  <div class="produto">
+    <strong>${p.nome}</strong> - R$ ${p.preco}
+    <br><small>${p.descricao || ""}</small>
 
-  snapshot.forEach(item => {
-    let p = item.val();
-    let id = item.key;
+    <button onclick="editar('${id}', '${p.nome}', '${p.preco}', \`${p.descricao || ""}\`)">✏️ Editar</button>
 
-    lista.innerHTML += `
-      <div class="produto">
-     ${p.nome} - R$ ${p.preco}
-<br><small>${p.descricao || ""}</small>
-        <button class="delete" onclick="deletar('${id}')">Excluir</button>
-      </div>
-    `;
+    <button class="delete" onclick="deletar('${id}')">Excluir</button>
+  </div>
+`;
   });
 });
 
