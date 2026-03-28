@@ -1,3 +1,5 @@
+<!DOCTYPE html> <html lang="pt-br"> <head> <meta charset="UTF-8"> <title>Admin - Produtos</title> <style> body { font-family: Arial; background: #222; color: #fff; } .container { max-width: 400px; margin: auto; } input { width: 100%; padding: 10px; margin-bottom: 10px; } button { width: 100%; padding: 10px; background: #4caf50; border: none; color: white; font-weight: bold; margin-bottom: 5px; } .produto { background: #333; padding: 10px; margin-bottom: 5px; } .delete { background: red; } </style> </head> <body> <div class="container"> <h2>⚙️ Gerenciar Produtos</h2> <input type="text" id="nome" placeholder="Nome do produto"> <input type="number" id="preco" placeholder="Preço"> <textarea id="descricao" placeholder="Ingredientes (ex: pão, carne, queijo)"></textarea> <button onclick="salvar()">➕ Salvar Produto</button> <hr> <div id="lista"></div> </div>
+  
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
