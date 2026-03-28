@@ -52,6 +52,7 @@ button {
 
 <input type="text" id="nome" placeholder="Nome do produto">
 <input type="number" id="preco" placeholder="Preço">
+  <textarea id="descricao" placeholder="Ingredientes (ex: pão, carne, queijo)"></textarea>
 
 <button onclick="salvar()">➕ Salvar Produto</button>
 
@@ -81,6 +82,7 @@ const db = getDatabase(app);
 window.salvar = function() {
   let nome = document.getElementById("nome").value;
   let preco = parseFloat(document.getElementById("preco").value);
+  let descricao = document.getElementById("descricao").value;
 
   if (!nome || !preco) {
     alert("Preencha tudo!");
@@ -89,11 +91,13 @@ window.salvar = function() {
 
   push(ref(db, "produtos"), {
     nome: nome,
-    preco: preco
+    preco: preco,
+    descricao: descricao
   });
 
   document.getElementById("nome").value = "";
   document.getElementById("preco").value = "";
+  document.getElementById("descricao").value = "";
 }
 
 onValue(ref(db, "produtos"), (snapshot) => {
@@ -106,7 +110,8 @@ onValue(ref(db, "produtos"), (snapshot) => {
 
     lista.innerHTML += `
       <div class="produto">
-        ${p.nome} - R$ ${p.preco}
+     ${p.nome} - R$ ${p.preco}
+<br><small>${p.descricao || ""}</small>
         <button class="delete" onclick="deletar('${id}')">Excluir</button>
       </div>
     `;
