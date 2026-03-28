@@ -125,7 +125,7 @@ window.carregarProdutos = function() {
 
   produtos.forEach((p, i) => {
     select.innerHTML += `<option value="${i}">
-      ${p.nome} - R$${p.preco}
+     ${p.nome} - R$${p.preco} (${p.descricao || ""})
     </option>`;
   });
 }
