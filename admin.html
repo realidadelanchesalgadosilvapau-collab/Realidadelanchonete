@@ -1,70 +1,6 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<title>Admin - Produtos</title>
-
-<style>
-body {
-  font-family: Arial;
-  background: #222;
-  color: #fff;
-}
-
-.container {
-  max-width: 400px;
-  margin: auto;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background: #4caf50;
-  border: none;
-  color: white;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.produto {
-  background: #333;
-  padding: 10px;
-  margin-bottom: 5px;
-}
-
-.delete {
-  background: red;
-}
-</style>
-
-</head>
-<body>
-
-<div class="container">
-
-<h2>⚙️ Gerenciar Produtos</h2>
-
-<input type="text" id="nome" placeholder="Nome do produto">
-<input type="number" id="preco" placeholder="Preço">
-  <textarea id="descricao" placeholder="Ingredientes (ex: pão, carne, queijo)"></textarea>
-
-<button onclick="salvar()">➕ Salvar Produto</button>
-
-<hr>
-
-<div id="lista"></div>
-
-</div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
@@ -79,6 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// 🔥 SALVAR PRODUTO
 window.salvar = function() {
   let nome = document.getElementById("nome").value;
   let preco = parseFloat(document.getElementById("preco").value);
@@ -100,25 +37,35 @@ window.salvar = function() {
   document.getElementById("descricao").value = "";
 }
 
+// 🔥 LISTAR PRODUTOS
 onValue(ref(db, "produtos"), (snapshot) => {
   let lista = document.getElementById("lista");
- lista.innerHTML += `
-  <div class="produto">
-    <strong>${p.nome}</strong> - R$ ${p.preco}
-    <br><small>${p.descricao || ""}</small>
+  lista.innerHTML = ""; // limpa antes
 
-    <button onclick="editar('${id}', '${p.nome}', '${p.preco}', \`${p.descricao || ""}\`)">✏️ Editar</button>
+  snapshot.forEach(item => {
+    let p = item.val();
+    let id = item.key;
 
-    <button class="delete" onclick="deletar('${id}')">Excluir</button>
-  </div>
-`;
+    lista.innerHTML += `
+      <div class="produto">
+        <strong>${p.nome}</strong> - R$ ${p.preco}
+        <br><small>${p.descricao || ""}</small>
+
+        <button onclick="editar('${id}', '${p.nome}', '${p.preco}', \`${p.descricao || ""}\`)">✏️ Editar</button>
+
+        <button class="delete" onclick="deletar('${id}')">Excluir</button>
+      </div>
+    `;
   });
 });
 
+// 🔥 DELETAR
 window.deletar = function(id) {
   if (!confirm("Excluir produto?")) return;
   remove(ref(db, "produtos/" + id));
+}
 
+// 🔥 EDITAR
 window.editar = function(id, nome, preco, descricao) {
 
   let novoNome = prompt("Editar nome:", nome);
@@ -135,10 +82,5 @@ window.editar = function(id, nome, preco, descricao) {
     preco: parseFloat(novoPreco),
     descricao: novaDescricao
   });
-
-}
 }
 </script>
-
-</body>
-</html>
