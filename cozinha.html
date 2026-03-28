@@ -5,26 +5,56 @@
 <title>Cozinha</title>
 
 <style>
-body { font-family: Arial; background: #111; color: #fff; }
-h2 { text-align: center; }
+body {
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+}
+
+h2 {
+  text-align: center;
+}
+
 .pedido {
   background: #222;
   margin: 10px;
   padding: 15px;
   border-radius: 10px;
+  border-left: 5px solid yellow;
 }
-.novo { border-left: 5px solid yellow; }
+
+button {
+  margin-top: 10px;
+  padding: 8px;
+  width: 100%;
+  background: green;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.info {
+  font-size: 14px;
+  color: #ccc;
+}
 </style>
 
 </head>
 <body>
 
 <h2>🍳 Pedidos</h2>
+
 <div id="lista"></div>
+
+<!-- 🔔 SOM -->
+<audio id="som">
+  <source src="https://www.soundjay.com/buttons/sounds/beep-07.mp3" type="audio/mpeg">
+</audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, onChildAdded } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
@@ -40,21 +70,42 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
+const som = document.getElementById("som");
 
 onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let p = snapshot.val();
 
+  // 🔔 toca som
+  som.play();
+
   let div = document.createElement("div");
-  div.className = "pedido novo";
+  div.className = "pedido";
 
   div.innerHTML = `
     <strong>👤 ${p.cliente}</strong><br>
-    🕒 ${p.hora}<br><br>
-  ${p.pedido.replace(/\n/g, "<br><hr>")}
+    <span class="info">🕒 ${p.hora}</span><br><br>
+
+    ${p.pedido.replace(/\n/g, "<br>")}
+
+    <br><br>
+    <strong>💰 Total: R$ ${p.total || 0}</strong>
+
+    <button onclick="finalizar('${snapshot.key}', this)">
+      ✅ Pedido Pronto
+    </button>
   `;
 
   lista.prepend(div);
 });
+
+// ✅ FINALIZAR PEDIDO
+window.finalizar = function(id, botao) {
+  if (!confirm("Finalizar pedido?")) return;
+
+  remove(ref(db, "pedidos/" + id));
+
+  botao.parentElement.remove();
+}
 </script>
 
 </body>
