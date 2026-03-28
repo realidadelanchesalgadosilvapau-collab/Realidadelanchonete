@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Cozinha</title>
+
+<style>
+body { font-family: Arial; background: #111; color: #fff; }
+h2 { text-align: center; }
+.pedido {
+  background: #222;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 10px;
+}
+.novo { border-left: 5px solid yellow; }
+</style>
+
+</head>
+<body>
+
+<h2>🍳 Pedidos</h2>
+<div id="lista"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, onChildAdded } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const lista = document.getElementById("lista");
+
+onChildAdded(ref(db, "pedidos"), (snapshot) => {
+  let p = snapshot.val();
+
+  let div = document.createElement("div");
+  div.className = "pedido novo";
+
+  div.innerHTML = `
+    <strong>👤 ${p.cliente}</strong><br>
+    🕒 ${p.hora}<br><br>
+    ${p.pedido}
+  `;
+
+  lista.prepend(div);
+});
+</script>
+
+</body>
+</html>
