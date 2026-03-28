@@ -70,14 +70,7 @@ button {
 
 <hr>
 
-<h3>➕ Cadastrar Produto</h3>
 
-<input type="text" id="novoNome" placeholder="Nome do produto">
-<input type="number" id="novoPreco" placeholder="Preço">
-
-<button class="secondary" onclick="cadastrar()">Adicionar ao Cardápio</button>
-
-<hr>
 
 <div id="lista"></div>
 
@@ -169,24 +162,6 @@ function atualizarTela() {
   });
 
   document.getElementById("total").innerText = "R$ " + total;
-}
-
-window.cadastrar = function() {
-  let nome = document.getElementById("novoNome").value;
-  let preco = parseFloat(document.getElementById("novoPreco").value);
-
-  if (!nome || !preco) {
-    alert("Preencha nome e preço");
-    return;
-  }
-
-  push(ref(db, "produtos"), {
-    nome: nome,
-    preco: preco
-  });
-
-  document.getElementById("novoNome").value = "";
-  document.getElementById("novoPreco").value = "";
 }
 
 
