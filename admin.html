@@ -103,14 +103,7 @@ window.salvar = function() {
   document.getElementById("descricao").value = "";
   document.getElementById("imagem").value = "";
 }
-  let imagem = document.getElementById("imagem").value;
 
-push(ref(db, "produtos"), {
-  nome: nome,
-  preco: preco,
-  descricao: descricao,
-  imagem: imagem
-});
 }
 
 // LISTAR
