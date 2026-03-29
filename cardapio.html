@@ -17,7 +17,7 @@ body {
   padding: 15px;
 }
 
-input, select, textarea {
+input, textarea {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
@@ -37,6 +37,27 @@ button {
   border-bottom: 1px solid #444;
   padding: 5px 0;
 }
+
+#cardapio {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.card {
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.card img {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+}
 </style>
 
 </head>
@@ -48,14 +69,15 @@ button {
 
 <input type="text" id="cliente" placeholder="Seu nome">
 <input type="text" id="telefone" placeholder="Seu WhatsApp">
+
 <img id="foto" style="width:100%; margin-bottom:10px; border-radius:10px;">
-//funcao usa o mause
-  <select id="produto"></select>
-  <div id="cardapio"></div>
+
+<!-- Cardápio -->
+<div id="cardapio"></div>
 
 <textarea id="obs" placeholder="Ex: sem cebola..."></textarea>
 
-<button onclick="adicionar()">➕ Adicionar</button>
+<button onclick="adicionarManual()">➕ Adicionar (manual)</button>
 
 <hr>
 
@@ -72,7 +94,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/fireba
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
+  apiKey: "SUA-KEY",
   authDomain: "realidade-60bdb.firebaseapp.com",
   databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
   projectId: "realidade-60bdb",
@@ -97,74 +119,58 @@ onValue(ref(db, "produtos"), (snapshot) => {
 
   carregarProdutos();
 });
-  // 👇 COLOCA AQUI (FORA DO onValue)
-document.getElementById("produto").addEventListener("change", function() {
-  let index = this.value;
+
+// MONTAR CARDÁPIO
+function carregarProdutos() {
+  let div = document.getElementById("cardapio");
+  div.innerHTML = "";
+
+  produtos.forEach((p, i) => {
+    div.innerHTML += `
+      <div class="card" onclick="selecionar(${i})">
+        <img src="${p.imagem || 'https://via.placeholder.com/150'}">
+        <strong>${p.nome}</strong><br>
+        R$ ${p.preco}
+      </div>
+    `;
+  });
+
+  // mostra primeira imagem
+  if (produtos.length > 0) {
+    document.getElementById("foto").src = produtos[0].imagem || "";
+  }
+}
+
+// CLICAR NO PRODUTO
+window.selecionar = function(index) {
   let produto = produtos[index];
 
   document.getElementById("foto").src = produto.imagem || "";
-});
 
-
-function carregarProdutos() {
-
-  let select = document.getElementById("produto");
-  let div = document.getElementById("cardapio");
-
-  if (select) select.innerHTML = "";
-  if (div) div.innerHTML = "";
-
-  produtos.forEach((p, i) => {
-
-    // SELECT (mantém funcionando)
-    if (select) {
-      select.innerHTML += `<option value="${i}">
-        ${p.nome} - R$${p.preco}
-      </option>`;
-    }
-
-    // CARDÁPIO NOVO
-    if (div) {
-      div.innerHTML += `
-        <div onclick="adicionarPorClique(${i})" style="background:#222;margin:5px;padding:10px;border-radius:8px;cursor:pointer;">
-          <strong>${p.nome}</strong> - R$ ${p.preco}
-        </div>
-      `;
-    }
-
-  });
-}
-  function adicionarPorClique(index) {
-  let produto = produtos[index];
+  let obs = prompt("Observação? (ex: sem cebola)");
 
   pedidos.push({
     nome: produto.nome,
-    preco: produto.preco,
-    obs: ""
+    obs: obs || ""
   });
-
-  total += produto.preco;
 
   atualizarTela();
 }
-// ADICIONAR ITEM
-window.adicionar = function() {
-  let index = document.getElementById("produto").value;
+
+// ADICIONAR MANUAL (opcional)
+window.adicionarManual = function() {
   let obs = document.getElementById("obs").value;
 
-  let produto = produtos[index];
-
   pedidos.push({
-    nome: produto.nome,
+    nome: "Item manual",
     obs: obs
   });
 
   document.getElementById("obs").value = "";
-
   atualizarTela();
 }
 
-// MOSTRAR LISTA
+// ATUALIZAR LISTA
 function atualizarTela() {
   let lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -173,7 +179,7 @@ function atualizarTela() {
     lista.innerHTML += `
       <div class="item">
         ${item.nome}
-        <br><small>${item.obs || ""}</small>
+        <br><small>${item.obs}</small>
       </div>
     `;
   });
