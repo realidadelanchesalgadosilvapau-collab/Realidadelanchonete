@@ -203,6 +203,9 @@ window.enviar = function() {
 }
 
 carregarProdutos();
+  if (produtos.length > 0) {
+  document.getElementById("foto").src = produtos[0].imagem || "";
+}
 </script>
 
 </body>
