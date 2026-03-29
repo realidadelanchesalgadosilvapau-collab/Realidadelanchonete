@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Cardápio Online</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+}
+
+.container {
+  max-width: 400px;
+  margin: auto;
+  padding: 15px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: #e53935;
+  color: white;
+  border: none;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.item {
+  border-bottom: 1px solid #444;
+  padding: 5px 0;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>🍔 Fazer Pedido</h2>
+
+<input type="text" id="cliente" placeholder="Seu nome">
+<input type="text" id="telefone" placeholder="Seu WhatsApp">
+
+<select id="produto"></select>
+
+<textarea id="obs" placeholder="Ex: sem cebola..."></textarea>
+
+<button onclick="adicionar()">➕ Adicionar</button>
+
+<hr>
+
+<div id="lista"></div>
+
+<hr>
+
+<button onclick="enviar()">📤 Enviar Pedido</button>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let pedidos = [];
+let produtos = [];
+
+// CARREGAR PRODUTOS
+onValue(ref(db, "produtos"), (snapshot) => {
+  produtos = [];
+
+  snapshot.forEach(item => {
+    produtos.push(item.val());
+  });
+
+  carregarProdutos();
+});
+
+function carregarProdutos() {
+  let select = document.getElementById("produto");
+  select.innerHTML = "";
+
+  produtos.forEach((p, i) => {
+    select.innerHTML += `<option value="${i}">
+      ${p.nome} - R$${p.preco}
+    </option>`;
+  });
+}
+
+// ADICIONAR ITEM
+window.adicionar = function() {
+  let index = document.getElementById("produto").value;
+  let obs = document.getElementById("obs").value;
+
+  let produto = produtos[index];
+
+  pedidos.push({
+    nome: produto.nome,
+    obs: obs
+  });
+
+  document.getElementById("obs").value = "";
+
+  atualizarTela();
+}
+
+// MOSTRAR LISTA
+function atualizarTela() {
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  pedidos.forEach(item => {
+    lista.innerHTML += `
+      <div class="item">
+        ${item.nome}
+        <br><small>${item.obs || ""}</small>
+      </div>
+    `;
+  });
+}
+
+// ENVIAR PEDIDO
+window.enviar = function() {
+  let cliente = document.getElementById("cliente").value;
+  let telefone = document.getElementById("telefone").value;
+
+  if (!cliente || !telefone) {
+    alert("Preencha nome e telefone");
+    return;
+  }
+
+  if (pedidos.length === 0) {
+    alert("Adicione itens");
+    return;
+  }
+
+  let resumo = pedidos.map(p =>
+    `${p.nome} (${p.obs || "sem observação"})`
+  ).join("\n");
+
+  push(ref(db, "pedidos"), {
+    cliente: cliente,
+    telefone: telefone,
+    pedido: resumo,
+    origem: "cliente",
+    hora: new Date().toLocaleTimeString()
+  });
+
+  alert("Pedido enviado!");
+
+  pedidos = [];
+  atualizarTela();
+  document.getElementById("cliente").value = "";
+  document.getElementById("telefone").value = "";
+}
+</script>
+
+</body>
+</html>
