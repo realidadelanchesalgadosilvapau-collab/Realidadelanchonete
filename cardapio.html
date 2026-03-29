@@ -48,7 +48,7 @@ button {
 
 <input type="text" id="cliente" placeholder="Seu nome">
 <input type="text" id="telefone" placeholder="Seu WhatsApp">
-
+<img id="foto" style="width:100%; margin-bottom:10px; border-radius:10px;">
 <select id="produto"></select>
 
 <textarea id="obs" placeholder="Ex: sem cebola..."></textarea>
@@ -94,6 +94,13 @@ onValue(ref(db, "produtos"), (snapshot) => {
   });
 
   carregarProdutos();
+});
+  // 👇 COLOCA AQUI (FORA DO onValue)
+document.getElementById("produto").addEventListener("change", function() {
+  let index = this.value;
+  let produto = produtos[index];
+
+  document.getElementById("foto").src = produto.imagem || "";
 });
 
 function carregarProdutos() {
