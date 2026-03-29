@@ -84,6 +84,7 @@ window.salvar = function() {
   let nome = document.getElementById("nome").value;
   let preco = parseFloat(document.getElementById("preco").value);
   let descricao = document.getElementById("descricao").value;
+  let imagem = document.getElementById("imagem").value;
 
   if (!nome || !preco) {
     alert("Preencha tudo!");
@@ -93,13 +94,15 @@ window.salvar = function() {
   push(ref(db, "produtos"), {
     nome: nome,
     preco: preco,
-    descricao: descricao
+    descricao: descricao,
+    imagem: imagem
   });
 
   document.getElementById("nome").value = "";
   document.getElementById("preco").value = "";
   document.getElementById("descricao").value = "";
-
+  document.getElementById("imagem").value = "";
+}
   let imagem = document.getElementById("imagem").value;
 
 push(ref(db, "produtos"), {
