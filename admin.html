@@ -53,7 +53,7 @@ button {
 <input type="text" id="nome" placeholder="Nome do produto">
 <input type="number" id="preco" placeholder="Preço">
 <textarea id="descricao" placeholder="Ingredientes (ex: pão, carne, queijo)"></textarea>
-
+<input type="text" id="imagem" placeholder="URL da imagem">
 <button onclick="salvar()">➕ Salvar Produto</button>
 
 <hr>
@@ -99,6 +99,15 @@ window.salvar = function() {
   document.getElementById("nome").value = "";
   document.getElementById("preco").value = "";
   document.getElementById("descricao").value = "";
+
+  let imagem = document.getElementById("imagem").value;
+
+push(ref(db, "produtos"), {
+  nome: nome,
+  preco: preco,
+  descricao: descricao,
+  imagem: imagem
+});
 }
 
 // LISTAR
