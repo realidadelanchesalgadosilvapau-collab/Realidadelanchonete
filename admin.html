@@ -103,9 +103,6 @@ window.salvar = function() {
   document.getElementById("descricao").value = "";
   document.getElementById("imagem").value = "";
 }
-
-
-
 // LISTAR
 onValue(ref(db, "produtos"), (snapshot) => {
   let lista = document.getElementById("lista");
