@@ -124,7 +124,7 @@ onValue(ref(db, "produtos"), (snapshot) => {
         <strong>${p.nome}</strong> - R$ ${p.preco}
         <br><small>${p.descricao || ""}</small>
 
-        <button onclick="editar('${id}', '${p.nome}', '${p.preco}', \`${p.descricao || ""}\`)">
+       <button onclick="editar('${id}', '${p.nome}', '${p.preco}', \`${p.descricao || ""}\`, '${p.imagem || ""}')">
           ✏️ Editar
         </button>
 
@@ -143,7 +143,7 @@ window.deletar = function(id) {
 }
 
 // EDITAR
-window.editar = function(id, nome, preco, descricao) {
+window.editar = function(id, nome, preco, descricao, imagem) {
 
   let novoNome = prompt("Editar nome:", nome);
   if (novoNome === null) return;
@@ -154,10 +154,14 @@ window.editar = function(id, nome, preco, descricao) {
   let novaDescricao = prompt("Editar descrição:", descricao);
   if (novaDescricao === null) return;
 
+  let novaImagem = prompt("Editar URL da imagem:", imagem);
+  if (novaImagem === null) return;
+
   update(ref(db, "produtos/" + id), {
     nome: novoNome,
     preco: parseFloat(novoPreco),
-    descricao: novaDescricao
+    descricao: novaDescricao,
+    imagem: novaImagem
   });
 
 }
