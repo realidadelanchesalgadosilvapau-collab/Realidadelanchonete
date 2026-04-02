@@ -76,8 +76,8 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let p = snapshot.val();
 
   // 🔔 toca som
-  som.play();
-
+  som.play().catch(() => {});
+  
   let div = document.createElement("div");
   div.className = "pedido";
 
