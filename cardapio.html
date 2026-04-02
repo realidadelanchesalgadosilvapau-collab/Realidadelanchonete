@@ -148,12 +148,11 @@ window.selecionar = function(index) {
   document.getElementById("foto").src = produto.imagem || "";
 
   let obs = prompt("Observação? (ex: sem cebola)");
-
-  pedidos.push({
-    nome: produto.nome,
-    obs: obs || ""
-  });
-
+pedidos.push({
+  nome: produto.nome,
+  preco: produto.preco,
+  obs: obs || ""
+});
   atualizarTela();
 }
 
