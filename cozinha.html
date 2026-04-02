@@ -81,20 +81,21 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let div = document.createElement("div");
   div.className = "pedido";
 
-  div.innerHTML = `
-    <strong>👤 ${p.cliente}</strong><br>
-    <span class="info">🕒 ${p.hora}</span><br><br>
+  ddiv.innerHTML = `
+  <strong>👤 ${p.cliente}</strong><br>
+  <span class="info">📞 ${p.telefone || "não informado"}</span><br>
+  <span class="info">📍 ${p.endereco || "retirada no local"}</span><br>
+  <span class="info">🕒 ${p.hora}</span><br><br>
 
-    ${p.pedido.replace(/\n/g, "<br>")}
+  ${p.pedido.replace(/\n/g, "<br>")}
 
-    <br><br>
-    <strong>💰 Total: R$ ${p.total || 0}</strong>
+  <br><br>
+  <strong>💰 Total: R$ ${p.total || 0}</strong>
 
-    <button onclick="finalizar('${snapshot.key}', this)">
-      ✅ Pedido Pronto
-    </button>
-  `;
-
+  <button onclick="finalizar('${snapshot.key}', this)">
+    ✅ Pedido Pronto
+  </button>
+`;
   lista.prepend(div);
 });
 
