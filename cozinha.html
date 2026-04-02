@@ -90,13 +90,24 @@ const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 const som = document.getElementById("som");
-  
- document.body.addEventListener("click", () => {
+ let liberado = false;
+
+window.ativarSom = function() {
   som.play().then(() => {
     som.pause();
     som.currentTime = 0;
-  }).catch(() => {});
-});
+
+    liberado = true;
+
+    // esconde botão depois de ativar
+    document.getElementById("btnSom").style.display = "none";
+
+  }).catch(() => {
+    alert("Toque novamente para ativar o som");
+  });
+}
+  
+ 
 //adicionar aqui
   let liberado = false;
 
