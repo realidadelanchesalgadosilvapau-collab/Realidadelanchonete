@@ -39,8 +39,8 @@ button {
   color: #ccc;
 }
 
-
-  #btnSom {
+/* 🔊 BOTÃO SOM */
+#btnSom {
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -53,7 +53,6 @@ button {
   color: white;
   cursor: pointer;
   z-index: 999;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 </style>
 
@@ -69,8 +68,9 @@ button {
   <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/lanchepedido.mp3" type="audio/mpeg">
 </audio>
 
-  <button id="btnSom" onclick="ativarSom()">🔊</button>
-  
+<!-- 🔊 BOTÃO -->
+<button id="btnSom" onclick="ativarSom()">🔊</button>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
@@ -90,8 +90,10 @@ const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 const som = document.getElementById("som");
- let liberado = false;
 
+let liberado = false;
+
+// 🔊 ATIVAR SOM (CLIQUE ÚNICO)
 window.ativarSom = function() {
   som.play().then(() => {
     som.pause();
@@ -99,28 +101,19 @@ window.ativarSom = function() {
 
     liberado = true;
 
-    // esconde botão depois de ativar
     document.getElementById("btnSom").style.display = "none";
-
   }).catch(() => {
     alert("Toque novamente para ativar o som");
   });
-}
-  
- 
-//adicionar aqui
-  let liberado = false;
+};
 
-document.body.addEventListener("click", () => {
-  liberado = true;
-});
-
-  
+// 📦 NOVO PEDIDO
 onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let p = snapshot.val();
 
-  // 🔔 toca som
+  // 🔔 SOM
   if (liberado) {
+    som.currentTime = 0;
     som.play().catch(() => {});
   }
 
@@ -145,14 +138,14 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
 
   lista.prepend(div);
 });
-// ✅ FINALIZAR PEDIDO
+
+// ✅ FINALIZAR
 window.finalizar = function(id, botao) {
   if (!confirm("Finalizar pedido?")) return;
 
   remove(ref(db, "pedidos/" + id));
-
   botao.parentElement.remove();
-}
+};
 </script>
 
 </body>
