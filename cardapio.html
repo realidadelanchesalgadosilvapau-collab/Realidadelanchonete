@@ -69,6 +69,7 @@ button {
 
 <input type="text" id="cliente" placeholder="Seu nome">
 <input type="tel" id="telefone" placeholder="Seu WhatsApp" pattern="[0-9]*" inputmode="numeric">
+  <input type="text" id="cep" placeholder="CEP">
   <input type="text" id="endereco" placeholder="Seu endereço (ou retirar no local)">
 
 <img id="foto" style="width:100%; margin-bottom:10px; border-radius:10px;">
@@ -107,6 +108,22 @@ const firebaseConfig = {
 };
 document.getElementById("telefone").addEventListener("input", function() {
   this.value = this.value.replace(/\D/g, "");
+});
+  document.getElementById("cep").addEventListener("blur", function() {
+  let cep = this.value.replace(/\D/g, "");
+
+  if (cep.length !== 8) return;
+
+  fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(res => res.json())
+    .then(dados => {
+      if (!dados.erro) {
+        document.getElementById("endereco").value =
+          dados.logradouro + ", " +
+          dados.bairro + " - " +
+          dados.localidade;
+      }
+    });
 });
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
