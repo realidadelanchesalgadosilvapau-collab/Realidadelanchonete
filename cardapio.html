@@ -68,7 +68,7 @@ button {
 <h2>🍔 Fazer Pedido</h2>
 
 <input type="text" id="cliente" placeholder="Seu nome">
-<input type="text" id="telefone" placeholder="Seu WhatsApp">
+<input type="tel" id="telefone" placeholder="Seu WhatsApp" pattern="[0-9]*" inputmode="numeric">
   <input type="text" id="endereco" placeholder="Seu endereço (ou retirar no local)">
 
 <img id="foto" style="width:100%; margin-bottom:10px; border-radius:10px;">
@@ -105,7 +105,9 @@ const firebaseConfig = {
   messagingSenderId: "510520738222",
   appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
 };
-
+document.getElementById("telefone").addEventListener("input", function() {
+  this.value = this.value.replace(/\D/g, "");
+});
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
