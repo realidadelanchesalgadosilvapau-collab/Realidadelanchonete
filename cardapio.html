@@ -69,7 +69,7 @@ button {
 
 <input type="text" id="cliente" placeholder="Seu nome">
 <input type="text" id="telefone" placeholder="Seu WhatsApp">
-  <input type="text" id="endereco" placeholder="Seu endereço">
+  <input type="text" id="endereco" placeholder="Seu endereço (ou retirar no local)">
 
 <img id="foto" style="width:100%; margin-bottom:10px; border-radius:10px;">
 
@@ -215,17 +215,20 @@ window.enviar = function() {
   push(ref(db, "pedidos"), {
     cliente: cliente,
     telefone: telefone,
-    endereco: endereco,
+    endereco: endereco || "Retirada no local",
     origem: "cliente",
     pedido: resumo,
     total: total,
-
     hora: new Date().toLocaleTimeString()
   });
+
   alert("Pedido enviado!");
 
   pedidos = [];
+  total = 0;
+
   atualizarTela();
+
   document.getElementById("cliente").value = "";
   document.getElementById("telefone").value = "";
   document.getElementById("endereco").value = "";
