@@ -71,7 +71,13 @@ const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 const som = document.getElementById("som");
-
+  
+ document.body.addEventListener("click", () => {
+  som.play().then(() => {
+    som.pause();
+    som.currentTime = 0;
+  }).catch(() => {});
+});
 //adicionar aqui
   let liberado = false;
 
