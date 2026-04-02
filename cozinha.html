@@ -81,7 +81,7 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let div = document.createElement("div");
   div.className = "pedido";
 
-  ddiv.innerHTML = `
+  div.innerHTML = `
   <strong>👤 ${p.cliente}</strong><br>
   <span class="info">📞 ${p.telefone || "não informado"}</span><br>
   <span class="info">📍 ${p.endereco || "retirada no local"}</span><br>
