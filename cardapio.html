@@ -206,11 +206,12 @@ window.enviar = function() {
   push(ref(db, "pedidos"), {
     cliente: cliente,
     telefone: telefone,
-    pedido: resumo,
     origem: "cliente",
+    pedido: resumo,
+    total: total,
+
     hora: new Date().toLocaleTimeString()
   });
-
   alert("Pedido enviado!");
 
   pedidos = [];
