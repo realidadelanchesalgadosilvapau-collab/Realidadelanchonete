@@ -79,7 +79,14 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let p = snapshot.val();
 
   // 🔔 toca som
+if (liberado) {
   som.play().catch(() => {});
+}
+  let liberado = false;
+
+document.body.addEventListener("click", () => {
+  liberado = true;
+});
   
   let div = document.createElement("div");
   div.className = "pedido";
