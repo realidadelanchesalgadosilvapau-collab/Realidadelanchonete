@@ -174,6 +174,182 @@ window.adicionarManual = function() {
 }
 
 // ATUALIZAR LISTA
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Cardápio Online</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+}
+
+.container {
+  max-width: 400px;
+  margin: auto;
+  padding: 15px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: #e53935;
+  color: white;
+  border: none;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.item {
+  border-bottom: 1px solid #444;
+  padding: 5px 0;
+}
+
+#cardapio {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.card {
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.card img {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>🍔 Fazer Pedido</h2>
+
+<input type="text" id="cliente" placeholder="Seu nome">
+<input type="text" id="telefone" placeholder="Seu WhatsApp">
+
+<img id="foto" style="width:100%; margin-bottom:10px; border-radius:10px;">
+
+<!-- Cardápio -->
+<div id="cardapio"></div>
+
+<textarea id="obs" placeholder="Ex: sem cebola..."></textarea>
+
+<button onclick="adicionarManual()">➕ Adicionar (manual)</button>
+
+<hr>
+
+<div id="lista"></div>
+
+<hr>
+
+<button onclick="enviar()">📤 Enviar Pedido</button>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "SUA-KEY",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let pedidos = [];
+let produtos = [];
+let total= 0;
+
+// CARREGAR PRODUTOS
+onValue(ref(db, "produtos"), (snapshot) => {
+  produtos = [];
+
+  snapshot.forEach(item => {
+    produtos.push(item.val());
+  });
+
+  carregarProdutos();
+});
+
+// MONTAR CARDÁPIO
+function carregarProdutos() {
+  let div = document.getElementById("cardapio");
+  div.innerHTML = "";
+
+  produtos.forEach((p, i) => {
+    div.innerHTML += `
+      <div class="card" onclick="selecionar(${i})">
+        <img src="${p.imagem || 'https://via.placeholder.com/150'}">
+        <strong>${p.nome}</strong><br>
+        R$ ${p.preco}
+      </div>
+    `;
+  });
+
+  // mostra primeira imagem
+  if (produtos.length > 0) {
+    document.getElementById("foto").src = produtos[0].imagem || "";
+  }
+}
+
+// CLICAR NO PRODUTO
+window.selecionar = function(index) {
+  let produto = produtos[index];
+
+  document.getElementById("foto").src = produto.imagem || "";
+
+  let obs = prompt("Observação? (ex: sem cebola)");
+pedidos.push({
+  nome: produto.nome,
+  preco: produto.preco,
+  obs: obs || ""
+});
+
+total += produto.preco;
+  atualizarTela();
+}
+
+
+// ADICIONAR MANUAL (opcional)
+window.adicionarManual = function() {
+  let obs = document.getElementById("obs").value;
+
+  pedidos.push({
+    nome: "Item manual",
+    obs: obs
+  });
+
+  document.getElementById("obs").value = "";
+  atualizarTela();
+}
+
+// ATUALIZAR LISTA
 function atualizarTela() {
   let lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -187,6 +363,47 @@ function atualizarTela() {
     `;
   });
 }
+
+// ENVIAR PEDIDO
+window.enviar = function() {
+  let cliente = document.getElementById("cliente").value;
+  let telefone = document.getElementById("telefone").value;
+
+  if (!cliente || !telefone) {
+    alert("Preencha nome e telefone");
+    return;
+  }
+
+  if (pedidos.length === 0) {
+    alert("Adicione itens");
+    return;
+  }
+
+  let resumo = pedidos.map(p =>
+    `${p.nome} (${p.obs || "sem observação"})`
+  ).join("\n");
+
+  push(ref(db, "pedidos"), {
+    cliente: cliente,
+    telefone: telefone,
+    origem: "cliente",
+    pedido: resumo,
+    total: total,
+
+    hora: new Date().toLocaleTimeString()
+  });
+  alert("Pedido enviado!");
+
+  pedidos = [];
+  atualizarTela();
+  document.getElementById("cliente").value = "";
+  document.getElementById("telefone").value = "";
+}
+</script>
+
+</body>
+</html>
+
 
 // ENVIAR PEDIDO
 window.enviar = function() {
