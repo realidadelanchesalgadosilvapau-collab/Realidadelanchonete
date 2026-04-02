@@ -350,6 +350,7 @@ window.adicionarManual = function() {
 }
 
 // ATUALIZAR LISTA
+  
 function atualizarTela() {
   let lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -362,8 +363,9 @@ function atualizarTela() {
       </div>
     `;
   });
-}
 
+  document.getElementById("total").innerText = total;
+}
 // ENVIAR PEDIDO
 window.enviar = function() {
   let cliente = document.getElementById("cliente").value;
@@ -404,43 +406,3 @@ window.enviar = function() {
 </body>
 </html>
 
-
-// ENVIAR PEDIDO
-window.enviar = function() {
-  let cliente = document.getElementById("cliente").value;
-  let telefone = document.getElementById("telefone").value;
-
-  if (!cliente || !telefone) {
-    alert("Preencha nome e telefone");
-    return;
-  }
-
-  if (pedidos.length === 0) {
-    alert("Adicione itens");
-    return;
-  }
-
-  let resumo = pedidos.map(p =>
-    `${p.nome} (${p.obs || "sem observação"})`
-  ).join("\n");
-
-  push(ref(db, "pedidos"), {
-    cliente: cliente,
-    telefone: telefone,
-    origem: "cliente",
-    pedido: resumo,
-    total: total,
-
-    hora: new Date().toLocaleTimeString()
-  });
-  alert("Pedido enviado!");
-
-  pedidos = [];
-  atualizarTela();
-  document.getElementById("cliente").value = "";
-  document.getElementById("telefone").value = "";
-}
-</script>
-
-</body>
-</html>
