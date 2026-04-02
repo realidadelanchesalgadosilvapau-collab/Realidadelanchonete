@@ -69,6 +69,7 @@ button {
 
 <input type="text" id="cliente" placeholder="Seu nome">
 <input type="text" id="telefone" placeholder="Seu WhatsApp">
+  <input type="text" id="endereco" placeholder="Seu endereço">
 
 <img id="foto" style="width:100%; margin-bottom:10px; border-radius:10px;">
 
@@ -195,7 +196,8 @@ function atualizarTela() {
 window.enviar = function() {
   let cliente = document.getElementById("cliente").value;
   let telefone = document.getElementById("telefone").value;
-
+  let endereco = document.getElementById("endereco").value;
+  
   if (!cliente || !telefone) {
     alert("Preencha nome e telefone");
     return;
