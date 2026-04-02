@@ -108,6 +108,7 @@ const db = getDatabase(app);
 
 let pedidos = [];
 let produtos = [];
+let total= 0;
 
 // CARREGAR PRODUTOS
 onValue(ref(db, "produtos"), (snapshot) => {
@@ -152,6 +153,7 @@ pedidos.push({
   nome: produto.nome,
   preco: produto.preco,
   obs: obs || ""
+  total += produto.preco;
 });
   atualizarTela();
 }
