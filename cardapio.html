@@ -158,6 +158,9 @@ pedidos.push({
 total += produto.preco;
   atualizarTela();
 }
+  <div>
+  Total: R$ <span id="total">0</span>
+</div>
 
 // ADICIONAR MANUAL (opcional)
 window.adicionarManual = function() {
@@ -186,9 +189,6 @@ function atualizarTela() {
     `;
   });
 }
-  <div>
-  Total: R$ <span id="total">0</span>
-</div>
 
 // ENVIAR PEDIDO
 window.enviar = function() {
