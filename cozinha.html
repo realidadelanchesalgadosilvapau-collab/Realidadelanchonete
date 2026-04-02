@@ -38,6 +38,23 @@ button {
   font-size: 14px;
   color: #ccc;
 }
+
+
+  #btnSom {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #ff9800;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 22px;
+  color: white;
+  cursor: pointer;
+  z-index: 999;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
 </style>
 
 </head>
@@ -52,6 +69,8 @@ button {
   <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/lanchepedido.mp3" type="audio/mpeg">
 </audio>
 
+  <button id="btnSom" onclick="ativarSom()">🔊</button>
+  
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
