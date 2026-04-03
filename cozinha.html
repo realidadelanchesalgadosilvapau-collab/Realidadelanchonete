@@ -163,14 +163,6 @@ window.finalizar = function(id, botao) {
     }
   });
 }
-  // 👉 ENVIA PARA ENTREGA
-  push(ref(db, "entregas"), pedido);
-
-  // 👉 REMOVE DA COZINHA
-  remove(ref(db, "pedidos/" + id));
-
-  pedidoDiv.remove();
-}
 </script>
 
 </body>
