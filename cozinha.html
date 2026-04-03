@@ -140,12 +140,29 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
 });
 
 // ✅ FINALIZAR
-window.finalizar = function(id, botao) {
-  if (!confirm("Finalizar pedido?")) return;
+import { push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
+window.finalizar = function(id, botao) {
+  if (!confirm("Enviar para entrega?")) return;
+
+  let pedidoDiv = botao.parentElement;
+
+  let pedido = {
+    cliente: pedidoDiv.querySelector("strong").innerText.replace("👤 ", ""),
+    telefone: pedidoDiv.innerHTML.includes("📞") ? pedidoDiv.innerHTML : "",
+    endereco: pedidoDiv.innerHTML.includes("📍") ? pedidoDiv.innerHTML : "",
+    pedido: pedidoDiv.innerHTML,
+    hora: new Date().toLocaleTimeString()
+  };
+
+  // 👉 ENVIA PARA ENTREGA
+  push(ref(db, "entregas"), pedido);
+
+  // 👉 REMOVE DA COZINHA
   remove(ref(db, "pedidos/" + id));
-  botao.parentElement.remove();
-};
+
+  pedidoDiv.remove();
+}
 </script>
 
 </body>
