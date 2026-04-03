@@ -47,8 +47,8 @@ button {
   color: #ccc;
 }
 </style>
-
 </head>
+
 <body>
 
 <h2>🛵 Entregas</h2>
@@ -74,15 +74,56 @@ const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 
-// RECEBER PEDIDOS (somente entregas)
-onChildAdded(ref(db, "entregas"), (snapshot) => {
+// 🔥 AGORA ESCUTA SOMENTE PEDIDOS PRONTOS
+onChildAdded(ref(db, "pedidos_prontos"), (snapshot) => {
   let p = snapshot.val();
 
   let div = document.createElement("div");
   div.className = "pedido";
 
   div.innerHTML = `
-    <strong>👤 ${p.cl
+    <strong>👤 ${p.cliente}</strong><br>
+    <span class="info">📞 ${p.telefone || "não informado"}</span><br>
+    <span class="info">📍 ${p.endereco || "retirada no local"}</span><br>
+    <span class="info">🕒 ${p.hora}</span><br><br>
+
+    ${p.pedido.replace(/\n/g, "<br>")}
+
+    <br><br>
+    <strong>💰 Total: R$ ${p.total || 0}</strong>
+
+    <br><br>
+
+    <button class="maps" onclick="abrirMapa('${p.endereco}')">
+      📍 Abrir no mapa
+    </button>
+
+    <button class="entregue" onclick="finalizar('${snapshot.key}', this)">
+      ✅ Entregue
+    </button>
+  `;
+
+  lista.prepend(div);
+});
+
+// 📍 MAPA
+window.abrirMapa = function(endereco) {
+  if (!endereco) {
+    alert("Endereço não informado");
+    return;
+  }
+
+  let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
+  window.open(url, "_blank");
+}
+
+// ✅ FINALIZAR ENTREGA
+window.finalizar = function(id, botao) {
+  if (!confirm("Marcar como entregue?")) return;
+
+  remove(ref(db, "pedidos_prontos/" + id));
+  botao.parentElement.remove();
+}
 </script>
 
 </body>
