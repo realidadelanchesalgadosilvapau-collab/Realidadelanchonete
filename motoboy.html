@@ -118,14 +118,30 @@ window.abrirMapa = function(endereco) {
 }
 
 // ✅ FINALIZAR ENTREGA
+  
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
-  update(ref(db, "entregas/" + id), {
-    status: "entregue"
-  });
+  let entregaRef = ref(db, "entregas_ativas/" + id);
 
-  botao.parentElement.remove();
+  get(entregaRef).then((snapshot) => {
+    if (snapshot.exists()) {
+
+      let dados = snapshot.val();
+
+      // 👉 SALVA NO HISTÓRICO
+      push(ref(db, "entregas_finalizadas"), {
+        ...dados,
+        status: "entregue"
+      });
+
+      // 👉 REMOVE DAS ATIVAS
+      remove(entregaRef);
+
+      // 👉 REMOVE DA TELA
+      botao.parentElement.remove();
+    }
+  });
 }
 </script>
 
