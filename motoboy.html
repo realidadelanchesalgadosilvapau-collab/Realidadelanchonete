@@ -57,7 +57,7 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, onChildAdded, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "SUA-KEY",
@@ -74,13 +74,11 @@ const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 
-// 🔥 AGORA ESCUTA SOMENTE PEDIDOS PRONTOS
+// 🔥 MOSTRAR SOMENTE PEDIDOS NOVOS
 onChildAdded(ref(db, "entregas"), (snapshot) => {
   let p = snapshot.val();
 
-  // 🔥 MOSTRAR SÓ PEDIDOS ATIVOS
-  if (p.status === "entregue") return;
-  if (!p.status || p.status !== "novo") return;
+  if (p.status !== "novo") return;
 
   let div = document.createElement("div");
   div.className = "pedido";
@@ -96,11 +94,11 @@ onChildAdded(ref(db, "entregas"), (snapshot) => {
     <br><br>
     <strong>💰 Total: R$ ${p.total || 0}</strong>
 
-    <button onclick="abrirMapa('${p.endereco}')">
+    <button class="maps" onclick="abrirMapa('${p.endereco}')">
       📍 Abrir no mapa
     </button>
 
-    <button onclick="finalizar('${snapshot.key}', this)">
+    <button class="entregue" onclick="finalizar('${snapshot.key}', this)">
       ✅ Entregue
     </button>
   `;
@@ -108,9 +106,18 @@ onChildAdded(ref(db, "entregas"), (snapshot) => {
   lista.prepend(div);
 });
 
-// ✅ FINALIZAR ENTREGA
-import { update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+// 📍 ABRIR MAPA
+window.abrirMapa = function(endereco) {
+  if (!endereco) {
+    alert("Endereço não informado");
+    return;
+  }
 
+  let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
+  window.open(url, "_blank");
+}
+
+// ✅ FINALIZAR ENTREGA
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
@@ -121,6 +128,7 @@ window.finalizar = function(id, botao) {
   botao.parentElement.remove();
 }
 </script>
+
 
 </body>
 </html>
