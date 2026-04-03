@@ -140,21 +140,29 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
 });
 
 // ✅ FINALIZAR
-import { push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { push, get } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 window.finalizar = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
-  let pedidoDiv = botao.parentElement;
+  let pedidoRef = ref(db, "pedidos/" + id);
 
-  let pedido = {
-    cliente: pedidoDiv.querySelector("strong").innerText.replace("👤 ", ""),
-    telefone: pedidoDiv.innerHTML.includes("📞") ? pedidoDiv.innerHTML : "",
-    endereco: pedidoDiv.innerHTML.includes("📍") ? pedidoDiv.innerHTML : "",
-    pedido: pedidoDiv.innerHTML,
-    hora: new Date().toLocaleTimeString()
-  };
+  get(pedidoRef).then((snapshot) => {
+    if (snapshot.exists()) {
 
+      let dados = snapshot.val();
+
+      // 👉 ENVIA PARA O MOTOBOY
+      push(ref(db, "entregas"), dados);
+
+      // 👉 REMOVE DA COZINHA
+      remove(pedidoRef);
+
+      // 👉 REMOVE DA TELA
+      botao.parentElement.remove();
+    }
+  });
+}
   // 👉 ENVIA PARA ENTREGA
   push(ref(db, "entregas"), pedido);
 
