@@ -124,13 +124,13 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
     <br><br>
     <strong>💰 Total: R$ ${p.total || 0}</strong>
 
-    <button onclick="finalizarLocal('${snapshot.key}', this)">
-      🏪 Pronto (Local)
-    </button>
+   <button class="btn-local" onclick="finalizarLocal('${snapshot.key}', this)">
+  🏪 Pronto (Local)
+</button>
 
-    <button onclick="enviarEntrega('${snapshot.key}', this)">
-      🛵 Enviar para Entrega
-    </button>
+<button class="btn-entrega" onclick="enviarEntrega('${snapshot.key}', this)">
+  🛵 Enviar para Entrega
+</button>
   `;
 
   lista.prepend(div);
