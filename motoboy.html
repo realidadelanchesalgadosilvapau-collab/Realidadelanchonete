@@ -75,7 +75,7 @@ const db = getDatabase(app);
 const lista = document.getElementById("lista");
 
 // 🔥 AGORA ESCUTA SOMENTE PEDIDOS PRONTOS
-onChildAdded(ref(db, "pedidos_prontos"), (snapshot) => {
+onChildAdded(ref(db, "entregas"), (snapshot) => {
   let p = snapshot.val();
 
   let div = document.createElement("div");
