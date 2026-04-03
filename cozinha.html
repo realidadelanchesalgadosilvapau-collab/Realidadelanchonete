@@ -135,7 +135,8 @@ window.finalizarLocal = function(id, botao) {
 
 
 // ✅ ENVIAR PRO MOTOBOY
-window.enviarEntrega = function(id, botao) {
+
+  window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
   let pedidoRef = ref(db, "pedidos/" + id);
@@ -154,6 +155,7 @@ window.enviarEntrega = function(id, botao) {
       botao.parentElement.remove();
     }
   });
+}
 
 </script>
 
