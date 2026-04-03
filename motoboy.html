@@ -78,7 +78,7 @@ const lista = document.getElementById("lista");
 onChildAdded(ref(db, "entregas"), (snapshot) => {
   let p = snapshot.val();
 
-  if (p.status !== "novo") return;
+  if (p.status !== "entregue") return;
 
   let div = document.createElement("div");
   div.className = "pedido";
