@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Motoboy</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+}
+
+h2 {
+  text-align: center;
+}
+
+.pedido {
+  background: #222;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 10px;
+  border-left: 5px solid #00c853;
+}
+
+button {
+  margin-top: 8px;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.maps {
+  background: #2196f3;
+  color: white;
+}
+
+.entregue {
+  background: #4caf50;
+  color: white;
+}
+
+.info {
+  font-size: 14px;
+  color: #ccc;
+}
+</style>
+
+</head>
+<body>
+
+<h2>🛵 Entregas</h2>
+
+<div id="lista"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "SUA-KEY",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const lista = document.getElementById("lista");
+
+// RECEBER PEDIDOS
+onChildAdded(ref(db, "pedidos"), (snapshot) => {
+  let p = snapshot.val();
+
+  let div = document.createElement("div");
+  div.className = "pedido";
+
+  div.innerHTML = `
+    <strong>👤 ${p.cliente}</strong><br>
+    <span class="info">📞 ${p.telefone}</span><br>
+    <span class="info">📍 ${p.endereco}</span><br><br>
+
+    ${p.pedido.replace(/\n/g, "<br>")}
+
+    <br><br>
+    <strong>💰 R$ ${p.total}</strong>
+
+    <button class="maps" onclick="abrirMapa('${p.endereco}')">
+      📍 Abrir no Mapa
+    </button>
+
+    <button class="entregue" onclick="finalizar('${snapshot.key}', this)">
+      ✅ Entregue
+    </button>
+  `;
+
+  lista.prepend(div);
+});
+
+// ABRIR MAPA
+window.abrirMapa = function(endereco) {
+  let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
+  window.open(url, "_blank");
+}
+
+// FINALIZAR ENTREGA
+window.finalizar = function(id, botao) {
+  if (!confirm("Marcar como entregue?")) return;
+
+  remove(ref(db, "pedidos/" + id));
+  botao.parentElement.remove();
+}
+</script>
+
+</body>
+</html>
