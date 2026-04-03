@@ -94,6 +94,7 @@ window.ativarSom = function() {
 };
 
 // 🔥 LER DA COZINHA CORRETO
+// 🔥 LER DA COZINHA
 onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let p = snapshot.val();
 
@@ -116,21 +117,30 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
     <br><br>
     <strong>💰 Total: R$ ${p.total || 0}</strong>
 
- <button onclick="finalizarLocal('${snapshot.key}', this)">
-  🏪 Pronto (Local)
-</button>
+    <button onclick="finalizarLocal('${snapshot.key}', this)">
+      🏪 Pronto (Local)
+    </button>
 
-<button onclick="enviarEntrega('${snapshot.key}', this)">
-  🛵 Enviar para Entrega
-</button>
+    <button onclick="enviarEntrega('${snapshot.key}', this)">
+      🛵 Enviar para Entrega
+    </button>
+  `;
 
   lista.prepend(div);
 });
 
 
-// ✅ ENVIAR PRO MOTOBOY
+// 🟢 FINALIZAR LOCAL
+window.finalizarLocal = function(id, botao) {
+  if (!confirm("Finalizar pedido local?")) return;
 
-  window.enviarEntrega = function(id, botao) {
+  remove(ref(db, "pedidos/" + id));
+  botao.parentElement.remove();
+}
+
+
+// 🛵 ENVIAR PARA MOTOBOY
+window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
   let pedidoRef = ref(db, "pedidos/" + id);
@@ -149,7 +159,8 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
       botao.parentElement.remove();
     }
   });
-}
+};
+  
 window.finalizarLocal = function(id, botao) {
   if (!confirm("Finalizar pedido local?")) return;
 
