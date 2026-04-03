@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Entregas</title>
+<title>Motoboy</title>
 
 <style>
 body {
@@ -11,26 +11,44 @@ body {
   color: #fff;
 }
 
-.entrega {
+h2 {
+  text-align: center;
+}
+
+.pedido {
   background: #222;
   margin: 10px;
   padding: 15px;
   border-radius: 10px;
-  border-left: 5px solid orange;
+  border-left: 5px solid #00c853;
 }
 
 button {
-  margin-top: 10px;
+  margin-top: 8px;
   padding: 10px;
   width: 100%;
-  background: blue;
-  color: white;
   border: none;
   font-weight: bold;
+  cursor: pointer;
+}
+
+.maps {
+  background: #2196f3;
+  color: white;
+}
+
+.entregue {
+  background: #4caf50;
+  color: white;
+}
+
+.info {
+  font-size: 14px;
+  color: #ccc;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <h2>🛵 Entregas</h2>
@@ -46,6 +64,9 @@ const firebaseConfig = {
   authDomain: "realidade-60bdb.firebaseapp.com",
   databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
   projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -53,40 +74,15 @@ const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 
+// RECEBER PEDIDOS (somente entregas)
 onChildAdded(ref(db, "entregas"), (snapshot) => {
   let p = snapshot.val();
 
   let div = document.createElement("div");
-  div.className = "entrega";
+  div.className = "pedido";
 
   div.innerHTML = `
-    <strong>${p.cliente}</strong><br>
-    ${p.pedido}
-
-    <br><br>
-    <button onclick="abrirMapa('${p.endereco}')">
-      📍 Abrir no mapa
-    </button>
-
-    <button onclick="entregue('${snapshot.key}', this)">
-      ✅ Entregue
-    </button>
-  `;
-
-  lista.prepend(div);
-});
-
-window.abrirMapa = function(endereco) {
-  let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
-  window.open(url, "_blank");
-}
-
-window.entregue = function(id, botao) {
-  if (!confirm("Finalizar entrega?")) return;
-
-  remove(ref(db, "entregas/" + id));
-  botao.parentElement.remove();
-}
+    <strong>👤 ${p.cl
 </script>
 
 </body>
