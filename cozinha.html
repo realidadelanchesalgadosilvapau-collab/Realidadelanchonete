@@ -10,10 +10,7 @@ body {
   background: #111;
   color: #fff;
 }
-
-h2 {
-  text-align: center;
-}
+h2 { text-align: center; }
 
 .pedido {
   background: #222;
@@ -34,12 +31,8 @@ button {
   cursor: pointer;
 }
 
-.info {
-  font-size: 14px;
-  color: #ccc;
-}
+.info { font-size: 14px; color: #ccc; }
 
-/* 🔊 BOTÃO SOM */
 #btnSom {
   position: fixed;
   bottom: 20px;
@@ -50,25 +43,22 @@ button {
   font-size: 26px;
 }
 </style>
-
 </head>
+
 <body>
 
 <h2>🍳 Pedidos</h2>
-
 <div id="lista"></div>
 
-<!-- 🔔 SOM -->
 <audio id="som">
   <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/lanchepedido.mp3" type="audio/mpeg">
 </audio>
 
-<!-- 🔊 BOTÃO -->
 <button id="btnSom" onclick="ativarSom()">🔊</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, onChildAdded, remove, push, get } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
@@ -88,25 +78,19 @@ const som = document.getElementById("som");
 
 let liberado = false;
 
-// 🔊 ATIVAR SOM (CLIQUE ÚNICO)
 window.ativarSom = function() {
   som.play().then(() => {
     som.pause();
     som.currentTime = 0;
-
     liberado = true;
-
     document.getElementById("btnSom").style.display = "none";
-  }).catch(() => {
-    alert("Toque novamente para ativar o som");
   });
 };
 
-// 📦 NOVO PEDIDO
-onChildAdded(ref(db, "pedidos"), (snapshot) => {
+// 🔥 LER DA COZINHA CORRETO
+onChildAdded(ref(db, "pedidos_cozinha"), (snapshot) => {
   let p = snapshot.val();
 
-  // 🔔 SOM
   if (liberado) {
     som.currentTime = 0;
     som.play().catch(() => {});
@@ -134,9 +118,7 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
   lista.prepend(div);
 });
 
-// ✅ FINALIZAR
-import { push, get, remove, ref } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
+// ✅ ENVIAR PRO MOTOBOY
 window.finalizar = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
@@ -147,16 +129,12 @@ window.finalizar = function(id, botao) {
 
       let dados = snapshot.val();
 
-      // 👉 ENVIA PARA MOTOBOY
       push(ref(db, "entregas_ativas"), {
         ...dados,
         status: "novo"
       });
 
-      // 👉 REMOVE DA COZINHA
       remove(pedidoRef);
-
-      // 👉 REMOVE DA TELA
       botao.parentElement.remove();
     }
   });
