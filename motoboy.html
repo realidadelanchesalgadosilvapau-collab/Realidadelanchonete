@@ -78,9 +78,35 @@ const lista = document.getElementById("lista");
 onChildAdded(ref(db, "entregas"), (snapshot) => {
   let p = snapshot.val();
 
-  // 🚫 IGNORA pedidos já entregues
+  // 🔥 MOSTRAR SÓ PEDIDOS ATIVOS
   if (p.status === "entregue") return;
+  if (!p.status || p.status !== "novo") return;
 
+  let div = document.createElement("div");
+  div.className = "pedido";
+
+  div.innerHTML = `
+    <strong>👤 ${p.cliente}</strong><br>
+    <span class="info">📞 ${p.telefone || "não informado"}</span><br>
+    <span class="info">📍 ${p.endereco || "retirada no local"}</span><br>
+    <span class="info">🕒 ${p.hora}</span><br><br>
+
+    ${p.pedido.replace(/\n/g, "<br>")}
+
+    <br><br>
+    <strong>💰 Total: R$ ${p.total || 0}</strong>
+
+    <button onclick="abrirMapa('${p.endereco}')">
+      📍 Abrir no mapa
+    </button>
+
+    <button onclick="finalizar('${snapshot.key}', this)">
+      ✅ Entregue
+    </button>
+  `;
+
+  lista.prepend(div);
+});
   let div = document.createElement("div");
   div.className = "pedido";
 
