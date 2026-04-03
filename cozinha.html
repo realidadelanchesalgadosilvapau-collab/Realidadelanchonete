@@ -148,15 +148,16 @@ window.finalizar = function(id, botao) {
       let dados = snapshot.val();
 
       // 👉 ENVIA PARA O MOTOBOY
-   push(ref(db, "entregas"), {
-  cliente: pedido.cliente,
-  telefone: pedido.telefone,
-  endereco: pedido.endereco,
-  pedido: pedido.pedido,
-  hora: pedido.hora,
-  total: pedido.total,
+  push(ref(db, "entregas"), {
+  cliente: dados.cliente,
+  telefone: dados.telefone,
+  endereco: dados.endereco,
+  pedido: dados.pedido,
+  hora: dados.hora,
+  total: dados.total,
 
-  status: "novo" // 🔥 ESSA LINHA É O SEGREDO
+  status: "novo" // 🔥 ESSENCIAL
+});
 });
       // 👉 REMOVE DA COZINHA
       remove(pedidoRef);
