@@ -10,10 +10,7 @@ body {
   background: #111;
   color: #fff;
 }
-
-h2 {
-  text-align: center;
-}
+h2 { text-align: center; }
 
 .pedido {
   background: #222;
@@ -32,35 +29,24 @@ button {
   cursor: pointer;
 }
 
-.maps {
-  background: #2196f3;
-  color: white;
-}
+.maps { background: #2196f3; color: white; }
+.entregue { background: #4caf50; color: white; }
 
-.entregue {
-  background: #4caf50;
-  color: white;
-}
-
-.info {
-  font-size: 14px;
-  color: #ccc;
-}
+.info { font-size: 14px; color: #ccc; }
 </style>
 </head>
 
 <body>
 
 <h2>🛵 Entregas</h2>
-
 <div id="lista"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, onChildAdded, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, onChildAdded, remove, get, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "SUA-KEY",
+  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
   authDomain: "realidade-60bdb.firebaseapp.com",
   databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
   projectId: "realidade-60bdb",
@@ -74,11 +60,9 @@ const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 
-// 🔥 MOSTRAR SOMENTE PEDIDOS NOVOS
-onChildAdded(ref(db, "entregas"), (snapshot) => {
+// 🔥 LER SOMENTE ENTREGAS ATIVAS
+onChildAdded(ref(db, "entregas_ativas"), (snapshot) => {
   let p = snapshot.val();
-
-  if (p.status !== "entregue") return;
 
   let div = document.createElement("div");
   div.className = "pedido";
@@ -106,19 +90,13 @@ onChildAdded(ref(db, "entregas"), (snapshot) => {
   lista.prepend(div);
 });
 
-// 📍 ABRIR MAPA
+// 📍 MAPA
 window.abrirMapa = function(endereco) {
-  if (!endereco) {
-    alert("Endereço não informado");
-    return;
-  }
-
   let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
   window.open(url, "_blank");
 }
 
 // ✅ FINALIZAR ENTREGA
-  
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
@@ -129,22 +107,17 @@ window.finalizar = function(id, botao) {
 
       let dados = snapshot.val();
 
-      // 👉 SALVA NO HISTÓRICO
       push(ref(db, "entregas_finalizadas"), {
         ...dados,
         status: "entregue"
       });
 
-      // 👉 REMOVE DAS ATIVAS
       remove(entregaRef);
-
-      // 👉 REMOVE DA TELA
       botao.parentElement.remove();
     }
   });
 }
 </script>
-
 
 </body>
 </html>
