@@ -78,6 +78,9 @@ const lista = document.getElementById("lista");
 onChildAdded(ref(db, "entregas"), (snapshot) => {
   let p = snapshot.val();
 
+  // 🚫 IGNORA pedidos já entregues
+  if (p.status === "entregue") return;
+
   let div = document.createElement("div");
   div.className = "pedido";
 
@@ -118,10 +121,15 @@ window.abrirMapa = function(endereco) {
 }
 
 // ✅ FINALIZAR ENTREGA
+import { update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
-  remove(ref(db, "pedidos_prontos/" + id));
+  update(ref(db, "entregas/" + id), {
+    status: "entregue"
+  });
+
   botao.parentElement.remove();
 }
 </script>
