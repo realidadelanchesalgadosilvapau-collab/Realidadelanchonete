@@ -126,12 +126,6 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
 
   lista.prepend(div);
 });
-window.finalizarLocal = function(id, botao) {
-  if (!confirm("Finalizar pedido local?")) return;
-
-  remove(ref(db, "pedidos/" + id));
-  botao.parentElement.remove();
-}
 
 
 // ✅ ENVIAR PRO MOTOBOY
@@ -155,6 +149,12 @@ window.finalizarLocal = function(id, botao) {
       botao.parentElement.remove();
     }
   });
+}
+window.finalizarLocal = function(id, botao) {
+  if (!confirm("Finalizar pedido local?")) return;
+
+  remove(ref(db, "pedidos/" + id));
+  botao.parentElement.remove();
 }
 
 </script>
