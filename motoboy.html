@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Entregas</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+}
+
+.entrega {
+  background: #222;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 10px;
+  border-left: 5px solid orange;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  width: 100%;
+  background: blue;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🛵 Entregas</h2>
+
+<div id="lista"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "SUA-KEY",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const lista = document.getElementById("lista");
+
+onChildAdded(ref(db, "entregas"), (snapshot) => {
+  let p = snapshot.val();
+
+  let div = document.createElement("div");
+  div.className = "entrega";
+
+  div.innerHTML = `
+    <strong>${p.cliente}</strong><br>
+    ${p.pedido}
+
+    <br><br>
+    <button onclick="abrirMapa('${p.endereco}')">
+      📍 Abrir no mapa
+    </button>
+
+    <button onclick="entregue('${snapshot.key}', this)">
+      ✅ Entregue
+    </button>
+  `;
+
+  lista.prepend(div);
+});
+
+window.abrirMapa = function(endereco) {
+  let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
+  window.open(url, "_blank");
+}
+
+window.entregue = function(id, botao) {
+  if (!confirm("Finalizar entrega?")) return;
+
+  remove(ref(db, "entregas/" + id));
+  botao.parentElement.remove();
+}
+</script>
+
+</body>
+</html>
