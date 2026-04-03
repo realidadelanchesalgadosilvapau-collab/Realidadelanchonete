@@ -148,7 +148,7 @@ window.finalizar = function(id, botao) {
       let dados = snapshot.val();
 
       // 👉 ENVIA PARA O MOTOBOY
-     push(ref(db, "entregas"), {
+   push(ref(db, "entregas"), {
   cliente: pedido.cliente,
   telefone: pedido.telefone,
   endereco: pedido.endereco,
@@ -156,7 +156,7 @@ window.finalizar = function(id, botao) {
   hora: pedido.hora,
   total: pedido.total,
 
-  status: "novo" // 🔥 ESSA LINHA AQUI
+  status: "novo" // 🔥 ESSA LINHA É O SEGREDO
 });
       // 👉 REMOVE DA COZINHA
       remove(pedidoRef);
