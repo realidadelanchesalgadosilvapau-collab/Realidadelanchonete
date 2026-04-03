@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Relatório Completo</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+  text-align: center;
+}
+
+.box {
+  background: #222;
+  margin: 15px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.valor {
+  font-size: 26px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+button {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.reset {
+  background: red;
+  color: white;
+}
+
+.filtro {
+  background: #2196f3;
+  color: white;
+}
+</style>
+
+</head>
+<body>
+
+<h2>📊 Relatório</h2>
+
+<button class="filtro" onclick="carregar('semana')">📅 Semana</button>
+<button class="filtro" onclick="carregar('mes')">📆 Mês</button>
+
+<div class="box">
+  💰 Total de vendas
+  <div id="vendas" class="valor">R$ 0</div>
+</div>
+
+<div class="box">
+  🛵 Total de entregas
+  <div id="entregas" class="valor">0</div>
+</div>
+
+<div class="box">
+  💵 Total das entregas (valor vendido)
+  <div id="valorEntregas" class="valor">R$ 0</div>
+</div>
+
+<div class="box">
+  💸 Pagamento motoboy (R$5 por entrega)
+  <div id="motoboy" class="valor">R$ 0</div>
+</div>
+
+<button class="reset" onclick="resetar()">🗑 Resetar mês</button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "SUA-KEY",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let valorEntrega = 5;
+
+// 📊 CARREGAR RELATÓRIO
+window.carregar = async function(tipo) {
+
+  let totalVendas = 0;
+  let totalEntregas = 0;
+  let totalValorEntregas = 0;
+
+  // 🔥 TODAS AS VENDAS (COZINHA)
+  let pedidosSnap = await get(ref(db, "pedidos"));
+
+  if (pedidosSnap.exists()) {
+    pedidosSnap.forEach(item => {
+      let p = item.val();
+      totalVendas += Number(p.total || 0);
+    });
+  }
+
+  // 🔥 ENTREGAS
+  let entregasSnap = await get(ref(db, "entregas"));
+
+  if (entregasSnap.exists()) {
+    entregasSnap.forEach(item => {
+      let p = item.val();
+
+      totalEntregas++;
+      totalValorEntregas += Number(p.total || 0);
+    });
+  }
+
+  // MOSTRAR
+  document.getElementById("vendas").innerText = "R$ " + totalVendas.toFixed(2);
+  document.getElementById("entregas").innerText = totalEntregas;
+  document.getElementById("valorEntregas").innerText = "R$ " + totalValorEntregas.toFixed(2);
+  document.getElementById("motoboy").innerText = "R$ " + (totalEntregas * valorEntrega).toFixed(2);
+}
+
+// 🗑 RESETAR MÊS
+window.resetar = function() {
+  if (!confirm("Apagar TODOS os dados do mês?")) return;
+
+  remove(ref(db, "pedidos"));
+  remove(ref(db, "entregas"));
+
+  alert("Dados resetados!");
+  location.reload();
+}
+
+// carregar automático
+carregar("mes");
+</script>
+
+</body>
+</html>
