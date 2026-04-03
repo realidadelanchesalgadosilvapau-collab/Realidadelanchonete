@@ -108,17 +108,6 @@ onChildAdded(ref(db, "entregas"), (snapshot) => {
   lista.prepend(div);
 });
 
-// 📍 MAPA
-window.abrirMapa = function(endereco) {
-  if (!endereco) {
-    alert("Endereço não informado");
-    return;
-  }
-
-  let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
-  window.open(url, "_blank");
-}
-
 // ✅ FINALIZAR ENTREGA
 import { update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
