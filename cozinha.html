@@ -148,8 +148,16 @@ window.finalizar = function(id, botao) {
       let dados = snapshot.val();
 
       // 👉 ENVIA PARA O MOTOBOY
-      push(ref(db, "entregas"), dados);
+     push(ref(db, "entregas"), {
+  cliente: pedido.cliente,
+  telefone: pedido.telefone,
+  endereco: pedido.endereco,
+  pedido: pedido.pedido,
+  hora: pedido.hora,
+  total: pedido.total,
 
+  status: "novo" // 🔥 ESSA LINHA AQUI
+});
       // 👉 REMOVE DA COZINHA
       remove(pedidoRef);
 
