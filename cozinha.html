@@ -135,30 +135,24 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
 });
 
 // ✅ FINALIZAR
-import { push, get } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { push, get, remove, ref } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 window.finalizar = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
-  let pedidoRef = ref(db, "pedidos/" + id);
+  let pedidoRef = ref(db, "pedidos_cozinha/" + id);
 
   get(pedidoRef).then((snapshot) => {
     if (snapshot.exists()) {
 
       let dados = snapshot.val();
 
-      // 👉 ENVIA PARA O MOTOBOY
-  push(ref(db, "entregas"), {
-  cliente: dados.cliente,
-  telefone: dados.telefone,
-  endereco: dados.endereco,
-  pedido: dados.pedido,
-  hora: dados.hora,
-  total: dados.total,
+      // 👉 ENVIA PARA MOTOBOY
+      push(ref(db, "entregas_ativas"), {
+        ...dados,
+        status: "novo"
+      });
 
-  status: "novo" // 🔥 ESSENCIAL
-});
-});
       // 👉 REMOVE DA COZINHA
       remove(pedidoRef);
 
