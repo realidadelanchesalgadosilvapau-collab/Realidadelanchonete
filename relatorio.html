@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Relatório</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+  text-align: center;
+}
+
+.box {
+  background: #222;
+  margin: 15px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.valor {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+</style>
+
+</head>
+<body>
+
+<h2>📊 Relatório da Semana</h2>
+
+<div class="box">
+  🛵 Entregas realizadas
+  <div id="totalEntregas" class="valor">0</div>
+</div>
+
+<div class="box">
+  💰 Total vendido
+  <div id="totalVendas" class="valor">R$ 0</div>
+</div>
+
+<div class="box">
+  💵 Valor para motoboy (ex: R$5 por entrega)
+  <div id="totalMotoboy" class="valor">R$ 0</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "SUA-KEY",
+  authDomain: "realidade-60bdb.firebaseapp.com",
+  databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+  projectId: "realidade-60bdb",
+  storageBucket: "realidade-60bdb.firebasestorage.app",
+  messagingSenderId: "510520738222",
+  appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// CONFIGURAÇÃO
+let valorEntrega = 5; // 💰 quanto paga por entrega
+
+// 🔥 CALCULAR RELATÓRIO
+onValue(ref(db, "entregas"), (snapshot) => {
+
+  let total = 0;
+  let entregas = 0;
+
+  snapshot.forEach(item => {
+    let p = item.val();
+
+    entregas++;
+
+    total += Number(p.total || 0);
+  });
+
+  // MOSTRAR NA TELA
+  document.getElementById("totalEntregas").innerText = entregas;
+  document.getElementById("totalVendas").innerText = "R$ " + total.toFixed(2);
+  document.getElementById("totalMotoboy").innerText = "R$ " + (entregas * valorEntrega).toFixed(2);
+
+});
+</script>
+
+</body>
+</html>
