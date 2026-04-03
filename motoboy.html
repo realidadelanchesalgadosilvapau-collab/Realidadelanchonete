@@ -107,33 +107,6 @@ onChildAdded(ref(db, "entregas"), (snapshot) => {
 
   lista.prepend(div);
 });
-  let div = document.createElement("div");
-  div.className = "pedido";
-
-  div.innerHTML = `
-    <strong>👤 ${p.cliente}</strong><br>
-    <span class="info">📞 ${p.telefone || "não informado"}</span><br>
-    <span class="info">📍 ${p.endereco || "retirada no local"}</span><br>
-    <span class="info">🕒 ${p.hora}</span><br><br>
-
-    ${p.pedido.replace(/\n/g, "<br>")}
-
-    <br><br>
-    <strong>💰 Total: R$ ${p.total || 0}</strong>
-
-    <br><br>
-
-    <button class="maps" onclick="abrirMapa('${p.endereco}')">
-      📍 Abrir no mapa
-    </button>
-
-    <button class="entregue" onclick="finalizar('${snapshot.key}', this)">
-      ✅ Entregue
-    </button>
-  `;
-
-  lista.prepend(div);
-});
 
 // 📍 MAPA
 window.abrirMapa = function(endereco) {
