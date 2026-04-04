@@ -33,7 +33,16 @@ button {
 .entregue { background: #4caf50; color: white; }
 
 .info { font-size: 14px; color: #ccc; }
-  
+
+#btnSom {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: red;
+  width: 70px;
+  height: 70px;
+  font-size: 26px;
+}
 </style>
 </head>
 
@@ -42,13 +51,19 @@ button {
 <h2>🛵 Entregas</h2>
 <div id="lista"></div>
 
+<!-- 🔔 SOM (FORA DO SCRIPT!) -->
+<audio id="som">
+  <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/lanchepedido.mp3" type="audio/mpeg">
+</audio>
+
+<button id="btnSom" onclick="ativarSom()">🔊</button>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, onChildAdded, remove, get, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
-  
 const firebaseConfig = {
-  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
+  apiKey: "SUA-KEY",
   authDomain: "realidade-60bdb.firebaseapp.com",
   databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
   projectId: "realidade-60bdb",
@@ -61,16 +76,30 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
-
+const som = document.getElementById("som");
 
 let liberado = false;
 
+// 🔊 ATIVAR SOM
+window.ativarSom = function() {
+  som.play().then(() => {
+    som.pause();
+    som.currentTime = 0;
+    liberado = true;
+    document.getElementById("btnSom").style.display = "none";
+  });
+};
 
-// 🔥 LER SOMENTE ENTREGAS ATIVAS
+// 🔥 LER ENTREGAS
 onChildAdded(ref(db, "entregas_ativas"), (snapshot) => {
   let p = snapshot.val();
 
-  
+  // 🔔 TOCAR SOM
+  if (liberado) {
+    som.currentTime = 0;
+    som.play().catch(() => {});
+  }
+
   let div = document.createElement("div");
   div.className = "pedido";
 
@@ -101,9 +130,9 @@ onChildAdded(ref(db, "entregas_ativas"), (snapshot) => {
 window.abrirMapa = function(endereco) {
   let url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco);
   window.open(url, "_blank");
-}
+};
 
-// ✅ FINALIZAR ENTREGA
+// ✅ FINALIZAR
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
@@ -123,7 +152,7 @@ window.finalizar = function(id, botao) {
       botao.parentElement.remove();
     }
   });
-}
+};
 </script>
 
 </body>
