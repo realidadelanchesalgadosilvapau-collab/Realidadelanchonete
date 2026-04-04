@@ -33,19 +33,6 @@ button {
 .entregue { background: #4caf50; color: white; }
 
 .info { font-size: 14px; color: #ccc; }
-
-
-
-#btnSom {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: red;
-  width: 70px;
-  height: 70px;
-  font-size: 26px;
-}
-
   
 </style>
 </head>
@@ -58,15 +45,6 @@ button {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, onChildAdded, remove, get, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
-  //coloca som
-<audio id="som">
-  <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/lanchepedido.mp3" type="audio/mpeg">
-</audio>
-
-<button id="btnSom" onclick="ativarSom()">🔊</button>
-<script type="module">
-
 
   
 const firebaseConfig = {
@@ -84,28 +62,13 @@ const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 
-  //coloca som
-const som = document.getElementById("som");
 
 let liberado = false;
 
-window.ativarSom = function() {
-  som.play().then(() => {
-    som.pause();
-    som.currentTime = 0;
-    liberado = true;
-    document.getElementById("btnSom").style.display = "none";
-  });
-};
 
 // 🔥 LER SOMENTE ENTREGAS ATIVAS
 onChildAdded(ref(db, "entregas_ativas"), (snapshot) => {
   let p = snapshot.val();
-  // ler o som ativa
-  if (liberado) {
-    som.currentTime = 0;
-    som.play().catch(() => {});
-  }
 
   
   let div = document.createElement("div");
