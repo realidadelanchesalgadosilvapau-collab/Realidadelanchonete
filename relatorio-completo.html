@@ -91,43 +91,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+import { onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
 let valorEntrega = 5;
 
-// 📊 CARREGAR RELATÓRIO
-window.carregar = async function(tipo) {
+// 🔥 RELATÓRIO EM TEMPO REAL
+onValue(ref(db, "relatorios"), (snapshot) => {
 
-  let totalVendas = 0;
-  let totalEntregas = 0;
-  let totalValorEntregas = 0;
+  let dados = snapshot.val();
+  if (!dados) return;
 
-  // 🔥 TODAS AS VENDAS (COZINHA)
-  let pedidosSnap = await get(ref(db, "pedidos"));
+  let totalVendas = dados.totalVendas || 0;
+  let totalEntregas = dados.totalEntregas || 0;
 
-  if (pedidosSnap.exists()) {
-    pedidosSnap.forEach(item => {
-      let p = item.val();
-      totalVendas += Number(p.total || 0);
-    });
-  }
+  let totalValorEntregas = totalVendas; // (pode separar depois)
+  let valorMotoboy = totalEntregas * valorEntrega;
 
-  // 🔥 ENTREGAS
-  let entregasSnap = await get(ref(db, "entregas"));
-
-  if (entregasSnap.exists()) {
-    entregasSnap.forEach(item => {
-      let p = item.val();
-
-      totalEntregas++;
-      totalValorEntregas += Number(p.total || 0);
-    });
-  }
-
-  // MOSTRAR
   document.getElementById("vendas").innerText = "R$ " + totalVendas.toFixed(2);
   document.getElementById("entregas").innerText = totalEntregas;
   document.getElementById("valorEntregas").innerText = "R$ " + totalValorEntregas.toFixed(2);
-  document.getElementById("motoboy").innerText = "R$ " + (totalEntregas * valorEntrega).toFixed(2);
-}
+  document.getElementById("motoboy").innerText = "R$ " + valorMotoboy.toFixed(2);
+
+});
 
 // 🗑 RESETAR MÊS
 window.resetar = function() {
