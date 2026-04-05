@@ -131,13 +131,14 @@ window.carregar = async function(tipo) {
 
 // 🗑 RESETAR MÊS
 window.resetar = function() {
-  if (!confirm("Apagar TODOS os dados do mês?")) return;
+  if (!confirm("Resetar relatório do mês?")) return;
 
-  remove(ref(db, "pedidos"));
-  remove(ref(db, "entregas"));
+  update(ref(db, "relatorios"), {
+    totalVendas: 0,
+    totalEntregas: 0
+  });
 
-  alert("Dados resetados!");
-  location.reload();
+  alert("Relatório resetado com sucesso!");
 }
 
 // carregar automático
