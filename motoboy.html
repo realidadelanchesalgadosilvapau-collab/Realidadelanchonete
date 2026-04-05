@@ -133,24 +133,49 @@ window.abrirMapa = function(endereco) {
 };
 
 // ✅ FINALIZAR
+import { get, push, remove, ref, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
   let entregaRef = ref(db, "entregas_ativas/" + id);
 
   get(entregaRef).then((snapshot) => {
-    if (snapshot.exists()) {
+    if (!snapshot.exists()) return;
 
-      let dados = snapshot.val();
+    let dados = snapshot.val();
 
-      push(ref(db, "entregas_finalizadas"), {
-        ...dados,
-        status: "entregue"
-      });
+    // ✅ SALVA HISTÓRICO
+    push(ref(db, "entregas_finalizadas"), {
+      ...dados,
+      status: "entregue",
+      data: new Date().toISOString()
+    });
 
-      remove(entregaRef);
-      botao.parentElement.remove();
-    }
+    // ✅ ATUALIZA RELATÓRIO SEM APAGAR
+    let relatorioRef = ref(db, "relatorios");
+
+    get(relatorioRef).then((snap) => {
+      let atual = snap.val();
+
+      // 🔥 SE NÃO EXISTIR, CRIA SEM ZERAR DEPOIS
+      if (!atual) {
+        update(relatorioRef, {
+          totalVendas: dados.total || 0,
+          totalEntregas: 1
+        });
+      } else {
+        update(relatorioRef, {
+          totalVendas: (atual.totalVendas || 0) + (dados.total || 0),
+          totalEntregas: (atual.totalEntregas || 0) + 1
+        });
+      }
+    });
+
+    // ✅ REMOVE APENAS DA LISTA ATIVA
+    remove(entregaRef);
+
+    botao.parentElement.remove();
   });
 };
 </script>
