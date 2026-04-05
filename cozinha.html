@@ -153,21 +153,28 @@ window.enviarEntrega = function(id, botao) {
   let pedidoRef = ref(db, "pedidos/" + id);
 
   get(pedidoRef).then((snapshot) => {
-    if (snapshot.exists()) {
+    if (!snapshot.exists()) return;
 
-      let dados = snapshot.val();
+    let dados = snapshot.val();
 
-      push(ref(db, "entregas_ativas"), {
-        ...dados,
-        status: "novo"
-      });
+    // 👉 ENVIA PRO MOTOBOY
+    push(ref(db, "entregas_ativas"), {
+      ...dados,
+      status: "novo"
+    }).then(() => {
 
+      // ✅ SÓ REMOVE DEPOIS DE ENVIAR
       remove(pedidoRef);
+
       botao.parentElement.remove();
-    }
+
+    }).catch((erro) => {
+      console.error("Erro ao enviar:", erro);
+      alert("Erro ao enviar pro motoboy!");
+    });
+
   });
 };
-  
 window.finalizarLocal = function(id, botao) {
   if (!confirm("Finalizar pedido local?")) return;
 
