@@ -51,7 +51,6 @@ button {
 <h2>🛵 Entregas</h2>
 <div id="lista"></div>
 
-<!-- 🔔 SOM (FORA DO SCRIPT!) -->
 <audio id="som">
   <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/olhaentrega.mp3" type="audio/mpeg">
 </audio>
@@ -60,10 +59,11 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, onChildAdded, remove, get, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, onChildAdded, get, push, remove, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
+// 🔥 SUA CONFIG REAL (NÃO MUDA)
 const firebaseConfig = {
-  apiKey: "SUA-KEY",
+  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
   authDomain: "realidade-60bdb.firebaseapp.com",
   databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
   projectId: "realidade-60bdb",
@@ -94,7 +94,6 @@ window.ativarSom = function() {
 onChildAdded(ref(db, "entregas_ativas"), (snapshot) => {
   let p = snapshot.val();
 
-  // 🔔 TOCAR SOM
   if (liberado) {
     som.currentTime = 0;
     som.play().catch(() => {});
@@ -133,8 +132,6 @@ window.abrirMapa = function(endereco) {
 };
 
 // ✅ FINALIZAR
-import { get, push, remove, ref, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
@@ -145,34 +142,26 @@ window.finalizar = function(id, botao) {
 
     let dados = snapshot.val();
 
-    // ✅ SALVA HISTÓRICO
+    // 📦 HISTÓRICO
     push(ref(db, "entregas_finalizadas"), {
       ...dados,
       status: "entregue",
       data: new Date().toISOString()
     });
 
-    // ✅ ATUALIZA RELATÓRIO SEM APAGAR
+    // 💰 RELATÓRIO
     let relatorioRef = ref(db, "relatorios");
 
     get(relatorioRef).then((snap) => {
       let atual = snap.val();
 
-      // 🔥 SE NÃO EXISTIR, CRIA SEM ZERAR DEPOIS
-      if (!atual) {
-        update(relatorioRef, {
-          totalVendas: dados.total || 0,
-          totalEntregas: 1
-        });
-      } else {
-        update(relatorioRef, {
-          totalVendas: (atual.totalVendas || 0) + (dados.total || 0),
-          totalEntregas: (atual.totalEntregas || 0) + 1
-        });
-      }
+      update(relatorioRef, {
+        totalVendas: (atual?.totalVendas || 0) + (dados.total || 0),
+        totalEntregas: (atual?.totalEntregas || 0) + 1
+      });
     });
 
-    // ✅ REMOVE APENAS DA LISTA ATIVA
+    // ❌ REMOVE SÓ DA ATIVA
     remove(entregaRef);
 
     botao.parentElement.remove();
