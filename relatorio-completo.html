@@ -115,10 +115,12 @@ onValue(ref(db, "relatorios"), (snapshot) => {
 });
 
 // 🗑 RESETAR MÊS
+import { set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
 window.resetar = function() {
   if (!confirm("Resetar relatório do mês?")) return;
 
-  update(ref(db, "relatorios"), {
+  set(ref(db, "relatorios"), {
     totalVendas: 0,
     totalEntregas: 0
   });
@@ -127,7 +129,7 @@ window.resetar = function() {
 }
 
 // carregar automático
-carregar("mes");
+
 </script>
 
 </body>
