@@ -118,9 +118,20 @@ onValue(ref(db, "relatorios"), (snapshot) => {
 import { set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 window.resetar = function() {
-  if (!confirm("Resetar relatório do mês?")) return;
 
-  set(ref(db, "relatorios"), {
+  let senha = prompt("Digite a senha para resetar o mês:");
+
+  // 🔑 SENHA DEFINIDA AQUI
+  const senhaCorreta = "1234"; // você pode mudar
+
+  if (senha !== senhaCorreta) {
+    alert("Senha incorreta!");
+    return;
+  }
+
+  if (!confirm("Tem certeza que deseja apagar os dados do mês?")) return;
+
+  update(ref(db, "relatorios"), {
     totalVendas: 0,
     totalEntregas: 0
   });
