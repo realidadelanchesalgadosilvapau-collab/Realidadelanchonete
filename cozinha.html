@@ -137,15 +137,6 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
 });
 
 
-// 🟢 FINALIZAR LOCAL
-window.finalizarLocal = function(id, botao) {
-  if (!confirm("Finalizar pedido local?")) return;
-
-  remove(ref(db, "pedidos/" + id));
-  botao.parentElement.remove();
-}
-
-
 // 🛵 ENVIAR PARA MOTOBOY
 window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
@@ -175,11 +166,46 @@ window.enviarEntrega = function(id, botao) {
 
   });
 };
+import { get, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+// 🏪 FINALIZAR LOCAL
 window.finalizarLocal = function(id, botao) {
   if (!confirm("Finalizar pedido local?")) return;
 
-  remove(ref(db, "pedidos/" + id));
-  botao.parentElement.remove();
+  let pedidoRef = ref(db, "pedidos/" + id);
+
+  get(pedidoRef).then((snapshot) => {
+    if (!snapshot.exists()) return;
+
+    let dados = snapshot.val();
+
+    let totalPedido = Number(dados.total || 0);
+
+    // 🔥 ATUALIZA RELATÓRIO
+    let relatorioRef = ref(db, "relatorios");
+
+    get(relatorioRef).then((snap) => {
+
+      let atual = snap.val();
+
+      if (!atual) {
+        update(relatorioRef, {
+          totalVendas: totalPedido,
+          totalEntregas: 0
+        });
+      } else {
+        update(relatorioRef, {
+          totalVendas: (atual.totalVendas || 0) + totalPedido
+        });
+      }
+
+    });
+
+    // ❌ REMOVE DA COZINHA
+    remove(pedidoRef);
+
+    botao.parentElement.remove();
+  });
 }
 
 </script>
