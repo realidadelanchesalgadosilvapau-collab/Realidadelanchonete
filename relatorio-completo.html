@@ -121,8 +121,7 @@ window.resetar = function() {
 
   let senha = prompt("Digite a senha para resetar o mês:");
 
-  // 🔑 SENHA DEFINIDA AQUI
-  const senhaCorreta = "1234"; // você pode mudar
+  const senhaCorreta = "1234";
 
   if (senha !== senhaCorreta) {
     alert("Senha incorreta!");
@@ -131,12 +130,16 @@ window.resetar = function() {
 
   if (!confirm("Tem certeza que deseja apagar os dados do mês?")) return;
 
-  update(ref(db, "relatorios"), {
+  // 🔥 RESETA O BANCO CERTO
+  update(ref(db, "relatorio_completo"), {
     totalVendas: 0,
-    totalEntregas: 0
+    totalEntregas: 0,
+    totalValorEntregas: 0
   });
 
   alert("Relatório resetado com sucesso!");
+
+  location.reload(); // 🔄 atualiza a tela
 }
 
 // carregar automático
