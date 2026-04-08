@@ -128,20 +128,6 @@ window.resetar = function() {
     return;
   }
 
-  if (!confirm("Tem certeza que deseja apagar os dados do mês?")) return;
-
-  // 🔥 RESETA O BANCO CERTO
-  update(ref(db, "relatorio_completo"), {
-    totalVendas: 0,
-    totalEntregas: 0,
-    totalValorEntregas: 0
-  });
-
-  alert("Relatório resetado com sucesso!");
-
-  location.reload(); // 🔄 atualiza a tela
-}
-
 // carregar automático
 
 </script>
