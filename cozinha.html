@@ -71,7 +71,8 @@ import {
   onChildAdded, 
   remove, 
   push, 
-  get 
+  get, 
+  update
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
@@ -166,7 +167,6 @@ window.enviarEntrega = function(id, botao) {
 
   });
 };
-import { get, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 // 🏪 FINALIZAR LOCAL
 window.finalizarLocal = function(id, botao) {
