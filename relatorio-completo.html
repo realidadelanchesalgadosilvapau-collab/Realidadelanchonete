@@ -101,7 +101,7 @@ onValue(ref(db, "relatorios"), (snapshot) => {
   let dados = snapshot.val();
 //  if (!dados) return;
 
-  let totalVendas = dados.totalVendas || 0;
+
   let totalEntregas = dados.totalEntregas || 0;
 
   let totalValorEntregas = totalVendas; // (pode separar depois)
@@ -120,15 +120,15 @@ import { set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-databas
 window.resetar = function() {
 
   let senha = prompt("Digite a senha para resetar o mês:");
-
   const senhaCorreta = "1234";
 
   if (senha !== senhaCorreta) {
     alert("Senha incorreta!");
     return;
   }
-}
- set(ref(db, "relatorios"), {
+
+  // 🔥 ZERA O RELATÓRIO
+  set(ref(db, "relatorios"), {
     totalVendas: 0,
     totalEntregas: 0
   }).then(() => {
