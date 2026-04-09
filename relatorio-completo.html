@@ -99,7 +99,6 @@ let valorEntrega = 5;
 onValue(ref(db, "relatorios"), (snapshot) => {
 
   let dados = snapshot.val();
-//  if (!dados) return;
 
 
   let totalEntregas = dados.totalEntregas || 0;
