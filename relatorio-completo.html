@@ -79,7 +79,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/fireba
 import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
+  apiKey: "SUA-KEY",
   authDomain: "realidade-60bdb.firebaseapp.com",
   databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
   projectId: "realidade-60bdb",
@@ -87,6 +87,7 @@ const firebaseConfig = {
   messagingSenderId: "510520738222",
   appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -98,8 +99,9 @@ let valorEntrega = 5;
 onValue(ref(db, "relatorios"), (snapshot) => {
 
   let dados = snapshot.val();
+  if (!dados) return;
 
-
+  let totalVendas = dados.totalVendas || 0;
   let totalEntregas = dados.totalEntregas || 0;
 
   let totalValorEntregas = totalVendas; // (pode separar depois)
@@ -113,27 +115,19 @@ onValue(ref(db, "relatorios"), (snapshot) => {
 });
 
 // 🗑 RESETAR MÊS
-import { set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
 window.resetar = function() {
+  if (!confirm("Resetar relatório do mês?")) return;
 
-  let senha = prompt("Digite a senha para resetar o mês:");
-  const senhaCorreta = "1234";
-
-  if (senha !== senhaCorreta) {
-    alert("Senha incorreta!");
-    return;
-  }
-
-  // 🔥 ZERA O RELATÓRIO
-  set(ref(db, "relatorios"), {
+  update(ref(db, "relatorios"), {
     totalVendas: 0,
     totalEntregas: 0
-  }).then(() => {
-    alert("Mês resetado com sucesso!");
   });
 
+  alert("Relatório resetado com sucesso!");
 }
+
+// carregar automático
+carregar("mes");
 </script>
 
 </body>
