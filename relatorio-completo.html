@@ -128,8 +128,14 @@ window.resetar = function() {
     return;
   }
 }
-// carregar automático
+ set(ref(db, "relatorios"), {
+    totalVendas: 0,
+    totalEntregas: 0
+  }).then(() => {
+    alert("Mês resetado com sucesso!");
+  });
 
+}
 </script>
 
 </body>
