@@ -155,9 +155,13 @@ window.enviarEntrega = function(id, botao) {
       status: "novo"
     }).then(() => {
 
-      // ✅ SÓ REMOVE DEPOIS DE ENVIAR
-      remove(pedidoRef);
+      // 🔥 NÃO REMOVE MAIS DO BANCO
+      update(ref(db, "pedidos/" + id), {
+        status: "pronto",
+        tipo: "delivery"
+      });
 
+      // remove só da tela
       botao.parentElement.remove();
 
     }).catch((erro) => {
