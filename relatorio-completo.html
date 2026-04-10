@@ -91,6 +91,20 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+  // acesar com senha
+  import { getAuth, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+const auth = getAuth(app);
+
+signInWithEmailAndPassword(auth, "SEUEMAIL@gmail.com", "SUASENHA")
+  .then(() => {
+    console.log("✅ Logado");
+  })
+  .catch((error) => {
+    console.error("❌ Erro login:", error);
+  });
+
 import { onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 let valorEntrega = 5;
