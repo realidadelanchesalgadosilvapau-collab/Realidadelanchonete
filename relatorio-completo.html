@@ -110,20 +110,33 @@ import { onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-dat
 let valorEntrega = 5;
 
 // 🔥 RELATÓRIO EM TEMPO REAL
-onValue(ref(db, "relatorios"), (snapshot) => {
+onValue(ref(db, "pedidos"), (snapshot) => {
 
   let dados = snapshot.val();
   if (!dados) return;
 
-  let totalVendas = dados.totalVendas || 0;
-  let totalEntregas = dados.totalEntregas || 0;
+  let totalVendas = 0;
+  let totalEntregas = 0;
 
-  let totalValorEntregas = totalVendas; // (pode separar depois)
-  let valorMotoboy = totalEntregas * valorEntrega;
+  Object.values(dados).forEach(pedido => {
+
+    // VENDAS (local + delivery finalizado)
+    if (pedido.status === "finalizado" || pedido.status === "entregue") {
+      totalVendas += Number(pedido.total || 0);
+    }
+
+    // ENTREGAS (só delivery entregue)
+    if (pedido.tipo === "delivery" && pedido.status === "entregue") {
+      totalEntregas++;
+    }
+
+  });
+
+  let valorMotoboy = totalEntregas * 5;
 
   document.getElementById("vendas").innerText = "R$ " + totalVendas.toFixed(2);
   document.getElementById("entregas").innerText = totalEntregas;
-  document.getElementById("valorEntregas").innerText = "R$ " + totalValorEntregas.toFixed(2);
+  document.getElementById("valorEntregas").innerText = "R$ " + totalVendas.toFixed(2);
   document.getElementById("motoboy").innerText = "R$ " + valorMotoboy.toFixed(2);
 
 });
