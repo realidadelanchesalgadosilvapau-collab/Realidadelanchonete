@@ -96,7 +96,14 @@ button {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
+const auth = getAuth(app);
+
+signInWithEmailAndPassword(auth, "seuemail@gmail.com", "suasenha");
+
+  
 const firebaseConfig = {
   apiKey: "SUA-KEY",
   authDomain: "realidade-60bdb.firebaseapp.com",
