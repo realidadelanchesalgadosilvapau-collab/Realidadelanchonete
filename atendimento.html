@@ -187,13 +187,17 @@ window.enviar = function() {
     `${p.nome} (${p.obs || "sem observação"})`
   ).join("\n");
 
-  push(ref(db, "pedidos"), {
-    cliente: cliente,
-    pedido: resumo,
-    total: total,
-    hora: new Date().toLocaleTimeString()
-  });
+push(ref(db, "pedidos"), {
+  cliente: cliente,
+  pedido: resumo,
+  total: total,
+  hora: new Date().toLocaleTimeString(),
 
+  tipo: "local",
+  status: "pendente",
+  motoboy: "",
+  data: new Date().toISOString()
+});
   alert("Pedido enviado!");
 
   pedidos = [];
