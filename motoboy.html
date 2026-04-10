@@ -149,7 +149,7 @@ window.finalizar = function(id, botao) {
       data: new Date().toISOString()
     });
 
-update(ref(db, "pedidos/" + id), {
+update(ref(db, "pedidos/" + dados.pedidoId), {
   status: "entregue"
 });
 
