@@ -117,7 +117,7 @@ onValue(ref(db, "relatorios"), (snapshot) => {
 // 🗑 RESETAR MÊS
 window.resetar = function() {
 
-  let senhaCorreta = "1234"; // 🔐 MUDE AQUI
+  let senhaCorreta = "1234";
 
   let senha = prompt("Digite a senha para resetar:");
 
@@ -128,6 +128,7 @@ window.resetar = function() {
 
   if (!confirm("Tem certeza que deseja resetar o relatório do mês?")) return;
 
+  // 👉 AQUI entra o update
   update(ref(db, "relatorios"), {
     totalVendas: 0,
     totalEntregas: 0
