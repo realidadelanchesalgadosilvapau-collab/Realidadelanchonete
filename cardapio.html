@@ -96,12 +96,6 @@ button {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword } 
-from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-const auth = getAuth(app);
-
-signInWithEmailAndPassword(auth, "seuemail@gmail.com", "suasenha");
 
   
 const firebaseConfig = {
@@ -134,6 +128,7 @@ document.getElementById("telefone").addEventListener("input", function() {
 });
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
 
 let pedidos = [];
 let produtos = [];
