@@ -176,40 +176,14 @@ window.enviarEntrega = function(id, botao) {
 window.finalizarLocal = function(id, botao) {
   if (!confirm("Finalizar pedido local?")) return;
 
-  let pedidoRef = ref(db, "pedidos/" + id);
-
-  get(pedidoRef).then((snapshot) => {
-    if (!snapshot.exists()) return;
-
-    let dados = snapshot.val();
-
-    let totalPedido = Number(dados.total || 0);
-
-    // 🔥 ATUALIZA RELATÓRIO
-    let relatorioRef = ref(db, "relatorios");
-
-    get(relatorioRef).then((snap) => {
-
-      let atual = snap.val();
-
-      if (!atual) {
-        update(relatorioRef, {
-          totalVendas: totalPedido,
-          totalEntregas: 0
-        });
-      } else {
-        update(relatorioRef, {
-          totalVendas: (atual.totalVendas || 0) + totalPedido
-        });
-      }
-
-    });
-
-    // ❌ REMOVE DA COZINHA
-    remove(pedidoRef);
-
-    botao.parentElement.remove();
+  update(ref(db, "pedidos/" + id), {
+    status: "finalizado",
+    tipo: "local"
   });
+
+  botao.parentElement.remove();
+};
+    
 }
 
 </script>
