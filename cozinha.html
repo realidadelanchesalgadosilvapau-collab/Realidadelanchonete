@@ -149,16 +149,18 @@ window.enviarEntrega = function(id, botao) {
     let dados = snapshot.val();
 
     // 👉 ENVIA PRO MOTOBOY
-    push(ref(db, "entregas_ativas"), {
-      ...dados,
-      status: "novo"
-    }).then(() => {
+  push(ref(db, "entregas_ativas"), {
+  ...dados,
+  pedidoId: id, // 👈 ADICIONA AQUI
+  status: "novo"
+}).then(() => {
 
-      // 🔥 NÃO REMOVE MAIS DO BANCO
-      update(ref(db, "pedidos/" + id), {
-        status: "pronto",
-        tipo: "delivery"
-      });
+  update(ref(db, "pedidos/" + id), {
+    status: "pronto",
+    tipo: "delivery"
+  });
+
+});
 
       // remove só da tela
       botao.parentElement.remove();
