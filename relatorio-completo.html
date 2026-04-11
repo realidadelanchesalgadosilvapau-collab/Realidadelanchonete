@@ -120,14 +120,26 @@ onValue(ref(db, "pedidos"), (snapshot) => {
 
   Object.values(dados).forEach(pedido => {
 
-    if (pedido.status === "entregue") {
-      totalEntregas++;
+    // 💰 VENDAS (local + delivery)
+    if (pedido.status === "finalizado" || pedido.status === "entregue") {
       totalVendas += Number(pedido.total || 0);
+    }
+
+    // 🛵 ENTREGAS
+    if (pedido.tipo === "delivery" && pedido.status === "entregue") {
+      totalEntregas++;
 
       console.log("Motoboy:", pedido.motoboy);
     }
 
   });
+
+  let valorMotoboy = totalEntregas * 5;
+
+  document.getElementById("vendas").innerText = "R$ " + totalVendas.toFixed(2);
+  document.getElementById("entregas").innerText = totalEntregas;
+  document.getElementById("valorEntregas").innerText = "R$ " + totalVendas.toFixed(2);
+  document.getElementById("motoboy").innerText = "R$ " + valorMotoboy.toFixed(2);
 
 });
     // VENDAS (local + delivery finalizado)
