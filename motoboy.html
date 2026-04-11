@@ -156,9 +156,11 @@ window.finalizar = function(id, botao) {
     update(ref(db, "pedidos/" + dados.pedidoId), {
       status: "entregue"
     });
+// 🔥 REMOVE DA FILA DO MOTOBOY
+remove(ref(db, "entregas_ativas/" + id));
 
-    // ❌ NÃO remove do banco (só da tela)
-    botao.parentElement.remove();
+// remove da tela
+botao.parentElement.remove();
   });
 };
 
