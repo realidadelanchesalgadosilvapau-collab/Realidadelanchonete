@@ -142,16 +142,22 @@ window.finalizar = function(id, botao) {
 
     let dados = snapshot.val();
 
-    // 📦 HISTÓRICO
+    // 📦 HISTÓRICO (opcional, pode manter)
     push(ref(db, "entregas_finalizadas"), {
       ...dados,
       status: "entregue",
       data: new Date().toISOString()
     });
 
-update(ref(db, "pedidos/" + dados.pedidoId), {
-  status: "entregue"
-});
+    // ✅ ATUALIZA PEDIDO CORRETO
+    update(ref(db, "pedidos/" + dados.pedidoId), {
+      status: "entregue"
+    });
+
+    // ❌ NÃO remove do banco (só da tela)
+    botao.parentElement.remove();
+  });
+};
 
 botao.parentElement.remove();
 </script>
