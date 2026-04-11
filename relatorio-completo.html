@@ -120,6 +120,16 @@ onValue(ref(db, "pedidos"), (snapshot) => {
 
   Object.values(dados).forEach(pedido => {
 
+    if (pedido.status === "entregue") {
+      totalEntregas++;
+      totalVendas += Number(pedido.total || 0);
+
+      console.log("Motoboy:", pedido.motoboy);
+    }
+
+  });
+
+});
     // VENDAS (local + delivery finalizado)
     if (pedido.status === "finalizado" || pedido.status === "entregue") {
       totalVendas += Number(pedido.total || 0);
