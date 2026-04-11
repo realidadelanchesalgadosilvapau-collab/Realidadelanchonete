@@ -138,10 +138,11 @@ window.abrirMapa = function(endereco) {
 // ✅ FINALIZAR
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
-
-  let entregaRef = ref(db, "entregas_ativas/" + id);
-  let nomeMotoboy = document.getElementById("nomeMotoboy").value;
   
+   let nomeMotoboy = document.getElementById("nomeMotoboy").value;
+  
+  let entregaRef = ref(db, "entregas_ativas/" + id);
+
   get(entregaRef).then((snapshot) => {
     if (!snapshot.exists()) return;
 
