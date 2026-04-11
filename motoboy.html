@@ -139,8 +139,12 @@ window.abrirMapa = function(endereco) {
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
   
-   let nomeMotoboy = document.getElementById("nomeMotoboy").value;
-  
+  let nomeMotoboy = document.getElementById("nomeMotoboy").value;
+
+if (!nomeMotoboy) {
+  alert("Digite o nome do motoboy!");
+  return;
+}
   let entregaRef = ref(db, "entregas_ativas/" + id);
 
   get(entregaRef).then((snapshot) => {
@@ -156,7 +160,7 @@ window.finalizar = function(id, botao) {
     });
 
     // ✅ ATUALIZA PEDIDO CORRETO atualiza nome motoboy e entrega
-  update(ref(db, "pedidos/" + dados.pedidoId), {
+ update(ref(db, "pedidos/" + dados.pedidoId), {
   status: "entregue",
   motoboy: nomeMotoboy
 });
