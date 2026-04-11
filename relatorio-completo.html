@@ -43,8 +43,8 @@ button {
   color: white;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <h2>📊 Relatório</h2>
@@ -78,11 +78,12 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
+// 🔥 CONFIG CORRETA (SUA ORIGINAL)
 const firebaseConfig = {
-  apiKey: "SUA-KEY",
+  apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
   authDomain: "realidade-60bdb.firebaseapp.com",
   databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
   projectId: "realidade-60bdb",
@@ -96,12 +97,11 @@ const db = getDatabase(app);
 
 // 🔐 LOGIN
 const auth = getAuth(app);
-
 signInWithEmailAndPassword(auth, "realidadelanchesalgadosilvapau@gmail.com", "4639Clarice@")
   .then(() => console.log("✅ Logado"))
-  .catch((error) => console.error("❌ Erro login:", error));
+  .catch((e) => console.error("Erro login:", e));
 
-// 🔥 RELATÓRIO EM TEMPO REAL
+// 📊 RELATÓRIO
 onValue(ref(db, "pedidos"), (snapshot) => {
 
   let dados = snapshot.val();
@@ -111,74 +111,64 @@ onValue(ref(db, "pedidos"), (snapshot) => {
   let totalEntregas = 0;
   let motoboys = {};
 
-  // 🔥 PEGA DATA DO RESET
-  get(ref(db, "config/dataReset")).then((snap) => {
+  Object.values(dados).forEach(pedido => {
 
-    let dataReset = snap.val();
+    // 💰 VENDAS
+    if (pedido.status === "finalizado" || pedido.status === "entregue") {
+      totalVendas += Number(pedido.total || 0);
+    }
 
-    Object.values(dados).forEach(pedido => {
+    // 🛵 ENTREGAS
+    if (pedido.tipo === "delivery" && pedido.status === "entregue") {
+      totalEntregas++;
 
-      // ❌ IGNORA pedidos antigos
-      if (dataReset && pedido.data < dataReset) return;
+      let nome = pedido.motoboy || "Não informado";
 
-      // 💰 VENDAS
-      if (pedido.status === "finalizado" || pedido.status === "entregue") {
-        totalVendas += Number(pedido.total || 0);
+      if (!motoboys[nome]) {
+        motoboys[nome] = 0;
       }
 
-      // 🛵 ENTREGAS
-      if (pedido.tipo === "delivery" && pedido.status === "entregue") {
-        totalEntregas++;
-
-        let nome = pedido.motoboy || "Não informado";
-
-        if (!motoboys[nome]) {
-          motoboys[nome] = 0;
-        }
-
-        motoboys[nome]++;
-      }
-
-      
-    });
-
-    let valorMotoboy = totalEntregas * 5;
-
-    document.getElementById("vendas").innerText = "R$ " + totalVendas.toFixed(2);
-    document.getElementById("entregas").innerText = totalEntregas;
-    document.getElementById("valorEntregas").innerText = "R$ " + totalVendas.toFixed(2);
-    document.getElementById("motoboy").innerText = "R$ " + valorMotoboy.toFixed(2);
-
-    // 🛵 LISTA MOTOBOYS
-    let lista = "";
-
-    Object.entries(motoboys).forEach(([nome, qtd]) => {
-      let valor = qtd * 5;
-
-      lista += `<div>${nome} → ${qtd} entregas → R$ ${valor}</div>`;
-    });
-
-    document.getElementById("listaMotoboys").innerHTML = lista;
+      motoboys[nome]++;
+    }
 
   });
+
+  let valorMotoboy = totalEntregas * 5;
+
+  document.getElementById("vendas").innerText = "R$ " + totalVendas.toFixed(2);
+  document.getElementById("entregas").innerText = totalEntregas;
+  document.getElementById("valorEntregas").innerText = "R$ " + totalVendas.toFixed(2);
+  document.getElementById("motoboy").innerText = "R$ " + valorMotoboy.toFixed(2);
+
+  // 👇 LISTA MOTOBOYS
+  let lista = "";
+
+  Object.entries(motoboys).forEach(([nome, qtd]) => {
+    let valor = qtd * 5;
+
+    lista += `<div>
+      ${nome} → ${qtd} entregas → R$ ${valor}
+    </div>`;
+  });
+
+  document.getElementById("listaMotoboys").innerHTML = lista;
 
 });
 
-// 🗑 RESET
+// 🔁 RESET (SIMPLES E FUNCIONAL)
 window.resetar = function() {
 
   let senha = prompt("Digite a senha:");
-  if (senha !== "1234") return;
+  if (senha !== "1234") {
+    alert("Senha errada!");
+    return;
+  }
 
-  if (!confirm("Resetar mês?")) return;
+  if (!confirm("Tem certeza que deseja resetar?")) return;
 
-  update(ref(db, "config"), {
-    dataReset: new Date().toISOString()
-  });
-
-  alert("✅ Reset feito!");
+  // 🔥 NÃO apaga banco → só recarrega página
+  location.reload();
 };
-
 </script>
 
 </body>
