@@ -105,7 +105,11 @@ window.ativarSom = function() {
 onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let p = snapshot.val();
 
+  // ❌ IGNORA FINALIZADOS
+  if (p.status === "finalizado" || p.status === "entregue") return;
+  
   if (liberado) {
+    
     som.currentTime = 0;
     som.play().catch(() => {});
   }
