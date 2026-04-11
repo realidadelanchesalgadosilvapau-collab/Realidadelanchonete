@@ -140,7 +140,8 @@ window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
   let entregaRef = ref(db, "entregas_ativas/" + id);
-
+  let nomeMotoboy = document.getElementById("nomeMotoboy").value;
+  
   get(entregaRef).then((snapshot) => {
     if (!snapshot.exists()) return;
 
