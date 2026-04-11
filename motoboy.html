@@ -155,10 +155,11 @@ window.finalizar = function(id, botao) {
       data: new Date().toISOString()
     });
 
-    // ✅ ATUALIZA PEDIDO CORRETO
-    update(ref(db, "pedidos/" + dados.pedidoId), {
-      status: "entregue"
-    });
+    // ✅ ATUALIZA PEDIDO CORRETO atualiza nome motoboy e entrega
+  update(ref(db, "pedidos/" + dados.pedidoId), {
+  status: "entregue",
+  motoboy: nomeMotoboy
+});
 // 🔥 REMOVE DA FILA DO MOTOBOY
 remove(ref(db, "entregas_ativas/" + id));
 
