@@ -71,6 +71,11 @@ button {
   💸 Pagamento motoboy (R$5 por entrega)
   <div id="motoboy" class="valor">R$ 0</div>
 </div>
+  
+  <div class="box">
+  🛵 Entregas por motoboy
+  <div id="listaMotoboys"></div>
+</div>
 
 <button class="reset" onclick="resetar()">🗑 Resetar mês</button>
 
@@ -117,6 +122,7 @@ onValue(ref(db, "pedidos"), (snapshot) => {
 
   let totalVendas = 0;
   let totalEntregas = 0;
+  let motoboys = {};
 
   Object.values(dados).forEach(pedido => {
 
@@ -126,11 +132,17 @@ onValue(ref(db, "pedidos"), (snapshot) => {
     }
 
     // 🛵 ENTREGAS
-    if (pedido.tipo === "delivery" && pedido.status === "entregue") {
-      totalEntregas++;
+  if (pedido.tipo === "delivery" && pedido.status === "entregue") {
+  totalEntregas++;
 
-      console.log("Motoboy:", pedido.motoboy);
-    }
+  let nome = pedido.motoboy || "Não informado";
+
+  if (!motoboys[nome]) {
+    motoboys[nome] = 0;
+  }
+
+  motoboys[nome]++;
+}
 
   });
 
@@ -140,7 +152,18 @@ onValue(ref(db, "pedidos"), (snapshot) => {
   document.getElementById("entregas").innerText = totalEntregas;
   document.getElementById("valorEntregas").innerText = "R$ " + totalVendas.toFixed(2);
   document.getElementById("motoboy").innerText = "R$ " + valorMotoboy.toFixed(2);
+  
+  let lista = "";
 
+Object.entries(motoboys).forEach(([nome, qtd]) => {
+  let valor = qtd * 5;
+
+  lista += `<div>
+    ${nome} → ${qtd} entregas → R$ ${valor}
+  </div>`;
+});
+
+document.getElementById("listaMotoboys").innerHTML = lista;
 });
 
 // 🗑 RESETAR MÊS
