@@ -160,11 +160,19 @@ window.resetar = function() {
 
   let senha = prompt("Digite a senha:");
   if (senha !== "1234") {
-    alert("Senha errada!");
+    alert("❌ Senha incorreta!");
     return;
   }
 
-  if (!confirm("Tem certeza que deseja resetar?")) return;
+  if (!confirm("Resetar mês?")) return;
+
+  update(ref(db, "config"), {
+    dataReset: new Date().toISOString()
+  });
+
+  alert("✅ Reset feito!");
+}
+ 
 
   // 🔥 NÃO apaga banco → só recarrega página
   location.reload();
