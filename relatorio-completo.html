@@ -156,11 +156,13 @@ onValue(ref(db, "pedidos"), (snapshot) => {
 });
 
 // 🔁 RESET (SIMPLES E FUNCIONAL)
-// 🗑 RESETAR MÊS
 window.resetar = function() {
 
   let senha = prompt("Digite a senha:");
-  if (senha !== "1234") return;
+  if (senha !== "1234") {
+    alert("❌ Senha incorreta!");
+    return;
+  }
 
   if (!confirm("Resetar mês?")) return;
 
@@ -169,17 +171,8 @@ window.resetar = function() {
   });
 
   alert("✅ Reset feito!");
-}
-  if (!confirm("Tem certeza que deseja resetar o relatório do mês?")) return;
+};
 
-  // 👉 AQUI entra o update
-  update(ref(db, "relatorios"), {
-    totalVendas: 0,
-    totalEntregas: 0
-  });
-
-  alert("✅ Relatório resetado com sucesso!");
-}
 // carregar automático
 carregar("mes");
 </script>
