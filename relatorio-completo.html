@@ -95,30 +95,34 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🔐 LOGIN
+// login
 const auth = getAuth(app);
-signInWithEmailAndPassword(auth, "realidadelanchesalgadosilvapau@gmail.com", "4639Clarice@")
-  .then(() => console.log("✅ Logado"))
-  .catch((e) => console.error("Erro login:", e));
+signInWithEmailAndPassword(auth, "SEU_EMAIL", "SUA_SENHA");
 
-// 📊 RELATÓRIO
+// 🔥 RELATÓRIO (corrigido)
 onValue(ref(db, "pedidos"), (snapshot) => {
 
   let dados = snapshot.val();
-  if (!dados) return;
 
+  // 🔥 limpa tela sempre
   let totalVendas = 0;
   let totalEntregas = 0;
   let motoboys = {};
 
+  document.getElementById("vendas").innerText = "R$ 0";
+  document.getElementById("entregas").innerText = "0";
+  document.getElementById("valorEntregas").innerText = "R$ 0";
+  document.getElementById("motoboy").innerText = "R$ 0";
+  document.getElementById("listaMotoboys").innerHTML = "";
+
+  if (!dados) return;
+
   Object.values(dados).forEach(pedido => {
 
-    // 💰 VENDAS
     if (pedido.status === "finalizado" || pedido.status === "entregue") {
       totalVendas += Number(pedido.total || 0);
     }
 
-    // 🛵 ENTREGAS
     if (pedido.tipo === "delivery" && pedido.status === "entregue") {
       totalEntregas++;
 
@@ -140,41 +144,72 @@ onValue(ref(db, "pedidos"), (snapshot) => {
   document.getElementById("valorEntregas").innerText = "R$ " + totalVendas.toFixed(2);
   document.getElementById("motoboy").innerText = "R$ " + valorMotoboy.toFixed(2);
 
-  // 👇 LISTA MOTOBOYS
   let lista = "";
 
   Object.entries(motoboys).forEach(([nome, qtd]) => {
     let valor = qtd * 5;
-
-    lista += `<div>
-      ${nome} → ${qtd} entregas → R$ ${valor}
-    </div>`;
+    lista += `<div>${nome} → ${qtd} entregas → R$ ${valor}</div>`;
   });
 
   document.getElementById("listaMotoboys").innerHTML = lista;
 
 });
 
-// 🔁 RESET (SIMPLES E FUNCIONAL)
-window.resetar = function() {
+// 🔥 GERAR PDF
+async function gerarPDF() {
+  const { jsPDF } = window.jspdf;
+  let doc = new jsPDF();
+  let y = 10;
 
-  let senha = prompt("Digite a senha:");
-  if (senha !== "1234") {
-    alert("❌ Senha incorreta!");
+  doc.text("RELATÓRIO DE FECHAMENTO", 10, y);
+  y += 10;
+
+  const snapshot = await get(ref(db, "pedidos"));
+
+  if (!snapshot.exists()) {
+    alert("Sem dados");
     return;
   }
 
-  if (!confirm("Resetar mês?")) return;
+  snapshot.forEach((item) => {
+    let id = item.key;
+    let p = item.val();
 
-  update(ref(db, "config"), {
-    dataReset: new Date().toISOString()
+    let texto = `ID: ${id}
+Cliente: ${p.cliente}
+Pedido: ${p.pedido}
+Total: R$ ${p.total}
+Status: ${p.status}`;
+
+    doc.text(texto, 10, y);
+    y += 30;
+
+    if (y > 270) {
+      doc.addPage();
+      y = 10;
+    }
   });
 
-  alert("✅ Reset feito!");
+  doc.save("relatorio.pdf");
+}
+
+// 🔥 RESET COMPLETO
+window.resetar = async function() {
+
+  let senha = prompt("Digite a senha:");
+  if (senha !== "1234") return;
+
+  if (!confirm("Gerar PDF e resetar?")) return;
+
+  await gerarPDF();
+
+  await remove(ref(db, "pedidos"));
+  await remove(ref(db, "entregas_ativas"));
+  await remove(ref(db, "entregas_finalizadas"));
+
+  alert("✅ Reset completo!");
 };
 
-// carregar automático
-carregar("mes");
 </script>
 
 </body>
