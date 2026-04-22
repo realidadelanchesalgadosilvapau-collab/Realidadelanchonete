@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Cardápio Online</title>
-
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e53935">
 <style>
 body {
   font-family: Arial;
@@ -58,9 +59,25 @@ button {
   object-fit: cover;
   border-radius: 8px;
 }
-</style>
 
+/* 🔥 BOTÕES DE PAGAMENTO */
+.pagamento {
+  flex: 1;
+  background: #333;
+}
+
+.pagamento.ativo {
+  background: #4caf50;
+}
+
+#pagamentoBox {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+</style>
 </head>
+
 <body>
 
 <div class="container">
@@ -68,27 +85,33 @@ button {
 <h2>🍔 Fazer Pedido</h2>
 
 <input type="text" id="cliente" placeholder="Seu nome">
-<input type="tel" id="telefone" placeholder="Seu WhatsApp" pattern="[0-9]*" inputmode="numeric">
-  <input type="text" id="cep" placeholder="CEP">
-  <input type="text" id="endereco" placeholder="Seu endereço (ou retirar no local)">
+<input type="tel" id="telefone" placeholder="Seu WhatsApp">
+<input type="text" id="cep" placeholder="CEP">
+<input type="text" id="endereco" placeholder="Seu endereço">
 
 <img id="foto" style="width:100%; margin-bottom:10px; border-radius:10px;">
 
-<!-- Cardápio -->
+<!-- CARDÁPIO -->
 <div id="cardapio"></div>
 
-<textarea id="obs" placeholder="Ex: sem cebola..."></textarea>
+<textarea id="obs" placeholder="Observação..."></textarea>
 
-<button onclick="adicionarManual()">➕ Adicionar (manual)</button>
+<!-- 🔥 PAGAMENTO MELHORADO -->
+<div id="pagamentoBox">
+  <button type="button" class="pagamento ativo" onclick="selecionarPagamento('entrega', this)">💵 Entrega</button>
+  <button type="button" class="pagamento" onclick="selecionarPagamento('pix', this)">💳 PIX / Cartão</button>
+</div>
 
 <hr>
 
 <div id="lista"></div>
 
 <hr>
-<div style="font-weight:bold; margin-top:10px;">
+
+<div style="font-weight:bold;">
   Total: R$ <span id="total">0</span>
 </div>
+
 <button onclick="enviar()">📤 Enviar Pedido</button>
 
 </div>
@@ -97,6 +120,7 @@ button {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
+/* 🔥 CONFIG FIREBASE */
   
 const firebaseConfig = {
   apiKey: "SUA-KEY",
@@ -129,12 +153,29 @@ document.getElementById("telefone").addEventListener("input", function() {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-
+/* 🔥 VARIÁVEIS GLOBAIS (IMPORTANTE) */
 let pedidos = [];
 let produtos = [];
-let total= 0;
+let total = 0;
+let formaPagamento = "entrega";
+let chavePix = "SEU_PIX_AQUI"; // telefone, cpf ou email
+/* 🔥 ESCOLHER PAGAMENTO */
+window.selecionarPagamento = function(tipo, el) {
+  formaPagamento = tipo;
 
-// CARREGAR PRODUTOS
+  document.querySelectorAll(".pagamento").forEach(btn => {
+    btn.classList.remove("ativo");
+  });
+
+  el.classList.add("ativo");
+};
+
+/* 🔥 TELEFONE NUMÉRICO */
+document.getElementById("telefone").addEventListener("input", function() {
+  this.value = this.value.replace(/\D/g, "");
+});
+
+/* 🔥 CARREGAR PRODUTOS */
 onValue(ref(db, "produtos"), (snapshot) => {
   produtos = [];
 
@@ -145,7 +186,7 @@ onValue(ref(db, "produtos"), (snapshot) => {
   carregarProdutos();
 });
 
-// MONTAR CARDÁPIO
+/* 🔥 MOSTRAR CARDÁPIO */
 function carregarProdutos() {
   let div = document.getElementById("cardapio");
   div.innerHTML = "";
@@ -153,51 +194,38 @@ function carregarProdutos() {
   produtos.forEach((p, i) => {
     div.innerHTML += `
       <div class="card" onclick="selecionar(${i})">
-        <img src="${p.imagem || 'https://via.placeholder.com/150'}">
+        <img src="${p.imagem ? p.imagem : 'https://via.placeholder.com/150'}"
+             onerror="this.src='https://via.placeholder.com/150'">
         <strong>${p.nome}</strong><br>
         R$ ${p.preco}
       </div>
     `;
   });
 
-  // mostra primeira imagem
   if (produtos.length > 0) {
     document.getElementById("foto").src = produtos[0].imagem || "";
   }
 }
 
-// CLICAR NO PRODUTO
+/* 🔥 CLICAR NO PRODUTO */
 window.selecionar = function(index) {
   let produto = produtos[index];
 
   document.getElementById("foto").src = produto.imagem || "";
 
-  let obs = prompt("Observação? (ex: sem cebola)");
-pedidos.push({
-  nome: produto.nome,
-  preco: produto.preco,
-  obs: obs || ""
-});
-
-total += produto.preco;
-  atualizarTela();
-}
-
-
-// ADICIONAR MANUAL (opcional)
-window.adicionarManual = function() {
-  let obs = document.getElementById("obs").value;
+  let obs = prompt("Observação?");
 
   pedidos.push({
-    nome: "Item manual",
-    obs: obs
+    nome: produto.nome,
+    preco: produto.preco,
+    obs: obs || ""
   });
 
-  document.getElementById("obs").value = "";
+  total += produto.preco;
   atualizarTela();
-}
+};
 
-// ATUALIZAR LISTA
+/* 🔥 ATUALIZAR TELA */
 function atualizarTela() {
   let lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -213,12 +241,14 @@ function atualizarTela() {
 
   document.getElementById("total").innerText = total;
 }
-// ENVIAR PEDIDO
+
+/* 🔥 ENVIAR PEDIDO */
 window.enviar = function() {
+
   let cliente = document.getElementById("cliente").value;
   let telefone = document.getElementById("telefone").value;
   let endereco = document.getElementById("endereco").value;
-  
+
   if (!cliente || !telefone) {
     alert("Preencha nome e telefone");
     return;
@@ -234,28 +264,55 @@ window.enviar = function() {
   ).join("\n");
 
   push(ref(db, "pedidos"), {
-    cliente: cliente,
-    telefone: telefone,
-    endereco: endereco || "Retirada no local",
-    origem: "cliente",
+    cliente,
+    telefone,
+    endereco: endereco || "Retirada",
     pedido: resumo,
-    total: total,
-    hora: new Date().toLocaleTimeString()
-  });
+    total,
+    hora: new Date().toLocaleTimeString(),
+    formaPagamento,
+    statusPagamento: "pendente",
+  }).then(() => {
 
-  alert("Pedido enviado!");
+  if (formaPagamento === "pix") {
 
+    let mensagem = `
+💰 PAGAMENTO VIA PIX
+
+Valor: R$ ${total}
+
+Chave PIX:
+${chavePix}
+
+📲 Envie o comprovante no WhatsApp para confirmar seu pedido.
+    `;
+
+    alert(mensagem);
+
+    let texto = encodeURIComponent(
+`Pedido realizado!\nTotal: R$ ${total}\nVou enviar o comprovante do PIX.`
+    );
+
+    window.open(`https://wa.me/11976681884?text=${texto}`);
+
+  } else {
+
+    alert("Pedido enviado! Pague na entrega.");
+
+  }
+
+  // 🔥 LIMPAR PEDIDO (muito importante)
   pedidos = [];
   total = 0;
-
   atualizarTela();
 
   document.getElementById("cliente").value = "";
   document.getElementById("telefone").value = "";
   document.getElementById("endereco").value = "";
-}
+
+});
+    }
 </script>
 
 </body>
 </html>
-

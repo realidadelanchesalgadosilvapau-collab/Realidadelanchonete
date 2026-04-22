@@ -2,58 +2,151 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Motoboy</title>
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
 
-<style>
-body {
-  font-family: Arial;
-  background: #111;
-  color: #fff;
-}
-h2 { text-align: center; }
+const lista = document.getElementById("lista");
+const som = document.getElementById("som");
 
-.pedido {
-  background: #222;
-  margin: 10px;
-  padding: 15px;
-  border-radius: 10px;
-  border-left: 5px solid #00c853;
-}
+let liberado = false;
 
-button {
-  margin-top: 8px;
-  padding: 10px;
-  width: 100%;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
+// 🔐 LOGIN
+window.login = function() {
+  let email = document.getElementById("email").value;
+  let senha = document.getElementById("senha").value;
 
-.maps { background: #2196f3; color: white; }
-.entregue { background: #4caf50; color: white; }
+  signInWithEmailAndPassword(auth, email, senha)
+    .catch((e) => alert("Erro: " + e.message));
+};
 
-.info { font-size: 14px; color: #ccc; }
+// 🔓 LIBERAR TELA
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("conteudo").style.display = "block";
+  }
+});
 
-#btnSom {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: red;
-  width: 70px;
-  height: 70px;
-  font-size: 26px;
-}
-</style>
-</head>
+// 🔊 SOM COM MEMÓRIA
+//let jaLiberou = localStorage.getItem("somLiberado");
 
-<body>
+//if (jaLiberou) {
+//  liberado = true;
+//  document.getElementById("btnSom").style.display = "none";
+  
+//}
 
-<h2>🛵 Entregas</h2>
-  <input type="text" id="nomeMotoboy" placeholder="Seu nome">
-<div id="lista"></div>
+//funcao som
+window.ativarSom = function() {
+  som.play().then(() => {
+    som.pause();
+    som.currentTime = 0;
 
-<audio id="som">
-  <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/olhaentrega.mp3" type="audio/mpeg">
+    liberado = true;
+    localStorage.setItem("somLiberado", "1");
+
+    document.getElementById("btnSom").style.display = "none";
+
+    alert("🔔 Som ativado!");
+  }).catch(() => {
+    alert("Clique novamente para ativar o som");
+  });
+};
+// 📥 PEDIDOS
+onChildAdded(ref(db, "pedidos"), (snapshot) => {
+  let p = snapshot.val();
+
+  if (
+    p.status === "pronto" || 
+    p.status === "finalizado" || 
+    p.status === "entregue"
+  ) return;
+
+  if (liberado) {
+    som.currentTime = 0;
+    som.play().catch(() => {});
+  }
+
+  let div = document.createElement("div");
+  div.className = "pedido";
+
+  let botoes = "";
+
+  if (p.tipo === "local") {
+    botoes = `
+      <button class="btn-local" onclick="finalizarLocal('${snapshot.key}', this)">
+        🏪 Pronto (Local)
+      </button>
+    `;
+  } else {
+    botoes = `
+      <button class="btn-entrega" onclick="enviarEntrega('${snapshot.key}', this)">
+        🛵 Enviar para Entrega
+      </button>
+    `;
+  }
+
+  div.innerHTML = `
+    <strong>👤 ${p.cliente}</strong><br>
+    <span class="info">📞 ${p.telefone || "não informado"}</span><br>
+    <span class="info">📍 ${p.endereco || "retirada no local"}</span><br>
+    <span class="info">🕒 ${p.hora}</span><br><br>
+
+    ${p.pedido.replace(/\n/g, "<br>")}
+
+    <br><br>
+    <strong>💰 Total: R$ ${p.total || 0}</strong>
+
+    ${botoes}
+  `;
+
+  lista.prepend(div);
+});
+
+// 🛵 ENVIAR ENTREGA
+window.enviarEntrega = function(id, botao) {
+  if (!confirm("Enviar para entrega?")) return;
+
+  let pedidoRef = ref(db, "pedidos/" + id);
+
+  get(pedidoRef).then((snapshot) => {
+    if (!snapshot.exists()) return;
+
+    let dados = snapshot.val();
+
+    push(ref(db, "entregas_ativas"), {
+      ...dados,
+      pedidoId: id,
+      status: "novo"
+    }).then(() => {
+
+      update(ref(db, "pedidos/" + id), {
+        status: "pronto",
+        tipo: "delivery"
+      });
+
+      botao.parentElement.remove();
+    });
+  });
+};
+
+// 🏪 FINALIZAR LOCAL
+window.finalizarLocal = function(id, botao) {
+  if (!confirm("Finalizar pedido local?")) return;
+
+  update(ref(db, "pedidos/" + id), {
+    status: "finalizado",
+    tipo: "local"
+  });
+
+  botao.parentElement.remove();
+};
+</script>
+
+</body>
+</html>
+"https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/olhaentrega.mp3" type="audio/mpeg">
 </audio>
 
 <button id="btnSom" onclick="ativarSom()">🔊</button>
@@ -61,8 +154,11 @@ button {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, onChildAdded, get, push, remove, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+  
 // 🔥 SUA CONFIG REAL (NÃO MUDA)
+
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
   authDomain: "realidade-60bdb.firebaseapp.com",
@@ -73,12 +169,31 @@ const firebaseConfig = {
   appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
 };
 
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const lista = document.getElementById("lista");
 const som = document.getElementById("som");
+const auth = getAuth(app);
+// 🔐 LOGIN
+window.login = function() {
+  let email = document.getElementById("email").value;
+  let senha = document.getElementById("senha").value;
 
+  signInWithEmailAndPassword(auth, email, senha)
+    .then(() => console.log("logado"))
+    .catch((e) => alert("Erro: " + e.message));
+};
+
+// 🔓 LIBERAR TELA APÓS LOGIN
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("conteudo").style.display = "block";
+  }
+});
+  
 let liberado = false;
 
 // 🔊 ATIVAR SOM
@@ -138,41 +253,40 @@ window.abrirMapa = function(endereco) {
 // ✅ FINALIZAR
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
-  
-  let nomeMotoboy = document.getElementById("nomeMotoboy").value;
 
-if (!nomeMotoboy) {
-  alert("Digite o nome do motoboy!");
-  return;
-}
+  const user = auth.currentUser;
+
+  if (!user) {
+    alert("Você precisa estar logado!");
+    return;
+  }
+
   let entregaRef = ref(db, "entregas_ativas/" + id);
 
   get(entregaRef).then((snapshot) => {
     if (!snapshot.exists()) return;
 
     let dados = snapshot.val();
-
-    // 📦 HISTÓRICO (opcional, pode manter)
+ // 📦 HISTÓRICO (opcional, pode manter)
     push(ref(db, "entregas_finalizadas"), {
       ...dados,
       status: "entregue",
       data: new Date().toISOString()
     });
-
-    // ✅ ATUALIZA PEDIDO CORRETO atualiza nome motoboy e entrega
- update(ref(db, "pedidos/" + dados.pedidoId), {
-  status: "entregue",
-  motoboy: nomeMotoboy
-});
-// 🔥 REMOVE DA FILA DO MOTOBOY
-remove(ref(db, "entregas_ativas/" + id));
-
-// remove da tela
-botao.parentElement.remove();
+  // ✅ ATUALIZA PEDIDO CORRETO atualiza nome motoboy e entrega
+    update(ref(db, "pedidos/" + dados.pedidoId), {
+      status: "entregue",
+      motoboy: user.email
+    });
+ // 🔥 REMOVE DA FILA DO MOTOBOY
+    remove(ref(db, "entregas_ativas/" + id));
+ // remove tela
+    botao.parentElement.remove();
   });
 };
 
 </script>
-
+</div>
 </body>
 </html>
+

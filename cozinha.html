@@ -10,7 +10,12 @@ body {
   background: #111;
   color: #fff;
 }
+
 h2 { text-align: center; }
+
+#conteudo {
+  display: none;
+}
 
 .pedido {
   background: #222;
@@ -22,13 +27,20 @@ h2 { text-align: center; }
 
 button {
   margin-top: 10px;
-  padding: 8px;
+  padding: 10px;
   width: 100%;
-  background: green;
-  color: white;
   border: none;
   font-weight: bold;
   cursor: pointer;
+  border-radius: 5px;
+}
+
+.btn-local {
+  background: #2196f3;
+}
+
+.btn-entrega {
+  background: #4caf50;
 }
 
 .info { font-size: 14px; color: #ccc; }
@@ -42,37 +54,38 @@ button {
   height: 70px;
   font-size: 26px;
 }
-  .btn-local {
-  background: #2196f3; /* azul */
-}
-
-.btn-entrega {
-  background: #4caf50; /* verde */
-}
 </style>
 </head>
 
 <body>
 
-<h2>🍳 Pedidos</h2>
-<div id="lista"></div>
+<!-- LOGIN -->
+<div id="loginBox">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+</div>
 
-<audio id="som">
-  <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/lanchepedido.mp3" type="audio/mpeg">
-</audio>
+<!-- CONTEÚDO -->
+<div id="conteudo">
+  <h2>🍳 Pedidos</h2>
+  <div id="lista"></div>
 
-<button id="btnSom" onclick="ativarSom()">🔊</button>
+  <audio id="som">
+    <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/lanchepedido.mp3"" type="audio/mpeg">
+  </audio>
+
+  <button id="btnSom" onclick="ativarSom()">🔊</button>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, onChildAdded, get, push, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-import { 
-  getDatabase, 
-  ref, 
-  onChildAdded, 
-  push, 
-  get, 
-  update
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+// 🔥 CONFIG
+
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
   authDomain: "realidade-60bdb.firebaseapp.com",
@@ -85,42 +98,88 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
 const lista = document.getElementById("lista");
 const som = document.getElementById("som");
 
 let liberado = false;
 
+// 🔐 LOGIN
+window.login = function() {
+  let email = document.getElementById("email").value;
+  let senha = document.getElementById("senha").value;
+
+  signInWithEmailAndPassword(auth, email, senha)
+    .catch((e) => alert("Erro: " + e.message));
+};
+
+// 🔓 LIBERAR TELA
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("conteudo").style.display = "block";
+  }
+});
+
+// 🔊 SOM COM MEMÓRIA
+//let jaLiberou = localStorage.getItem("somLiberado");
+
+//if (jaLiberou) {
+//  liberado = true;
+//  document.getElementById("btnSom").style.display = "none";
+  
+//}
+
+//funcao som
 window.ativarSom = function() {
   som.play().then(() => {
     som.pause();
     som.currentTime = 0;
+
     liberado = true;
+    localStorage.setItem("somLiberado", "1");
+
     document.getElementById("btnSom").style.display = "none";
+
+    alert("🔔 Som ativado!");
+  }).catch(() => {
+    alert("Clique novamente para ativar o som");
   });
 };
-
-// 🔥 LER DA COZINHA CORRETO
-// 🔥 LER DA COZINHA
+// 📥 PEDIDOS
 onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let p = snapshot.val();
 
-  // ❌ NÃO mostra pedidos já enviados ou finalizados
   if (
     p.status === "pronto" || 
     p.status === "finalizado" || 
     p.status === "entregue"
   ) return;
 
-
   if (liberado) {
-    
     som.currentTime = 0;
     som.play().catch(() => {});
   }
 
   let div = document.createElement("div");
   div.className = "pedido";
+
+  let botoes = "";
+
+  if (p.tipo === "local") {
+    botoes = `
+      <button class="btn-local" onclick="finalizarLocal('${snapshot.key}', this)">
+        🏪 Pronto (Local)
+      </button>
+    `;
+  } else {
+    botoes = `
+      <button class="btn-entrega" onclick="enviarEntrega('${snapshot.key}', this)">
+        🛵 Enviar para Entrega
+      </button>
+    `;
+  }
 
   div.innerHTML = `
     <strong>👤 ${p.cliente}</strong><br>
@@ -133,20 +192,13 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
     <br><br>
     <strong>💰 Total: R$ ${p.total || 0}</strong>
 
-   <button class="btn-local" onclick="finalizarLocal('${snapshot.key}', this)">
-  🏪 Pronto (Local)
-</button>
-
-<button class="btn-entrega" onclick="enviarEntrega('${snapshot.key}', this)">
-  🛵 Enviar para Entrega
-</button>
+    ${botoes}
   `;
 
   lista.prepend(div);
 });
 
-
-// 🛵 ENVIAR PARA MOTOBOY
+// 🛵 ENVIAR ENTREGA
 window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
@@ -157,29 +209,19 @@ window.enviarEntrega = function(id, botao) {
 
     let dados = snapshot.val();
 
-    // 👉 ENVIA PRO MOTOBOY
     push(ref(db, "entregas_ativas"), {
       ...dados,
       pedidoId: id,
       status: "novo"
     }).then(() => {
 
-      // 🔄 ATUALIZA PEDIDO
       update(ref(db, "pedidos/" + id), {
         status: "pronto",
         tipo: "delivery"
       });
 
-      // remove só da tela
       botao.parentElement.remove();
-
-    }).catch((erro) => {
-      console.error("Erro ao enviar:", erro);
-      alert("Erro ao enviar pro motoboy!");
     });
-
-  }).catch((erro) => {
-    console.error("Erro ao buscar pedido:", erro);
   });
 };
 
@@ -193,8 +235,7 @@ window.finalizarLocal = function(id, botao) {
   });
 
   botao.parentElement.remove();
-};  
-
+};
 </script>
 
 </body>

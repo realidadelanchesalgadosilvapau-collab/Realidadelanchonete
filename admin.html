@@ -45,6 +45,13 @@ button {
 
 </head>
 <body>
+<div id="loginBox">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div id="conteudo" style="display:none;">
 
 <div class="container">
 
@@ -65,7 +72,10 @@ button {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
+ 
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
   authDomain: "realidade-60bdb.firebaseapp.com",
@@ -78,7 +88,22 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
+window.login = function() {
+  let email = document.getElementById("email").value;
+  let senha = document.getElementById("senha").value;
+
+  signInWithEmailAndPassword(auth, email, senha)
+    .then(() => console.log("logado"))
+    .catch(() => alert("erro no login"));
+};
+  onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("conteudo").style.display = "block";
+  }
+});
 // SALVAR
 window.salvar = function() {
   let nome = document.getElementById("nome").value;
@@ -159,6 +184,7 @@ window.editar = function(id, nome, preco, descricao, imagem) {
 
 }
 </script>
-
+</div>
 </body>
 </html>
+

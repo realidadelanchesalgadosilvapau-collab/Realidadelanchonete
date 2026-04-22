@@ -187,28 +187,37 @@ window.enviar = function() {
     `${p.nome} (${p.obs || "sem observação"})`
   ).join("\n");
 
-// troqueiaqui
+  // 🔥 ENVIA PRO FIREBASE
   push(ref(db, "pedidos"), {
-  cliente: cliente,
+    cliente: cliente,
 
-  // 🔥 padrão igual cardápio
-  telefone: "",
-  endereco: "Retirada no local",
-  origem: "atendimento",
+    telefone: "",
+    endereco: "Retirada no local",
+    origem: "atendimento",
 
-  pedido: resumo,
-  total: total,
-  hora: new Date().toLocaleTimeString(),
+    pedido: resumo,
+    total: total,
+    hora: new Date().toLocaleTimeString(),
 
-  // mantém seu controle
-  tipo: "local",
-  status: "pendente",
-  motoboy: "",
-  data: new Date().toISOString()
-});
-   
-}
+    tipo: "local",
+    status: "novo", // 🔥 IMPORTANTE
+    motoboy: "",
+    data: new Date().toISOString()
+  });
+
+  // 🔥 LIMPA TELA (ERA ISSO QUE FALTAVA)
+  pedidos = [];
+  total = 0;
+
+  document.getElementById("cliente").value = "";
+  document.getElementById("obs").value = "";
+
+  atualizarTela();
+
+  alert("Pedido enviado!");
+};
 </script>
 
 </body>
 </html>
+
