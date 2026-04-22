@@ -2,151 +2,69 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
+<title>Motoboy</title>
 
-const lista = document.getElementById("lista");
-const som = document.getElementById("som");
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+}
+  #conteudo {
+  display: none;
+}
+h2 { text-align: center; }
 
-let liberado = false;
+.pedido {
+  background: #222;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 10px;
+  border-left: 5px solid #00c853;
+}
 
-// 🔐 LOGIN
-window.login = function() {
-  let email = document.getElementById("email").value;
-  let senha = document.getElementById("senha").value;
+button {
+  margin-top: 8px;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-  signInWithEmailAndPassword(auth, email, senha)
-    .catch((e) => alert("Erro: " + e.message));
-};
+.maps { background: #2196f3; color: white; }
+.entregue { background: #4caf50; color: white; }
 
-// 🔓 LIBERAR TELA
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("conteudo").style.display = "block";
-  }
-});
+.info { font-size: 14px; color: #ccc; }
 
-// 🔊 SOM COM MEMÓRIA
-//let jaLiberou = localStorage.getItem("somLiberado");
+#btnSom {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: red;
+  width: 70px;
+  height: 70px;
+  font-size: 26px;
+}
+</style>
+</head>
 
-//if (jaLiberou) {
-//  liberado = true;
-//  document.getElementById("btnSom").style.display = "none";
+<body>
+
+  <div id="loginBox">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div id="conteudo" style="display:none;">
   
-//}
+<h2>🛵 Entregas</h2>
+ 
+<div id="lista"></div>
 
-//funcao som
-window.ativarSom = function() {
-  som.play().then(() => {
-    som.pause();
-    som.currentTime = 0;
-
-    liberado = true;
-    localStorage.setItem("somLiberado", "1");
-
-    document.getElementById("btnSom").style.display = "none";
-
-    alert("🔔 Som ativado!");
-  }).catch(() => {
-    alert("Clique novamente para ativar o som");
-  });
-};
-// 📥 PEDIDOS
-onChildAdded(ref(db, "pedidos"), (snapshot) => {
-  let p = snapshot.val();
-
-  if (
-    p.status === "pronto" || 
-    p.status === "finalizado" || 
-    p.status === "entregue"
-  ) return;
-
-  if (liberado) {
-    som.currentTime = 0;
-    som.play().catch(() => {});
-  }
-
-  let div = document.createElement("div");
-  div.className = "pedido";
-
-  let botoes = "";
-
-  if (p.tipo === "local") {
-    botoes = `
-      <button class="btn-local" onclick="finalizarLocal('${snapshot.key}', this)">
-        🏪 Pronto (Local)
-      </button>
-    `;
-  } else {
-    botoes = `
-      <button class="btn-entrega" onclick="enviarEntrega('${snapshot.key}', this)">
-        🛵 Enviar para Entrega
-      </button>
-    `;
-  }
-
-  div.innerHTML = `
-    <strong>👤 ${p.cliente}</strong><br>
-    <span class="info">📞 ${p.telefone || "não informado"}</span><br>
-    <span class="info">📍 ${p.endereco || "retirada no local"}</span><br>
-    <span class="info">🕒 ${p.hora}</span><br><br>
-
-    ${p.pedido.replace(/\n/g, "<br>")}
-
-    <br><br>
-    <strong>💰 Total: R$ ${p.total || 0}</strong>
-
-    ${botoes}
-  `;
-
-  lista.prepend(div);
-});
-
-// 🛵 ENVIAR ENTREGA
-window.enviarEntrega = function(id, botao) {
-  if (!confirm("Enviar para entrega?")) return;
-
-  let pedidoRef = ref(db, "pedidos/" + id);
-
-  get(pedidoRef).then((snapshot) => {
-    if (!snapshot.exists()) return;
-
-    let dados = snapshot.val();
-
-    push(ref(db, "entregas_ativas"), {
-      ...dados,
-      pedidoId: id,
-      status: "novo"
-    }).then(() => {
-
-      update(ref(db, "pedidos/" + id), {
-        status: "pronto",
-        tipo: "delivery"
-      });
-
-      botao.parentElement.remove();
-    });
-  });
-};
-
-// 🏪 FINALIZAR LOCAL
-window.finalizarLocal = function(id, botao) {
-  if (!confirm("Finalizar pedido local?")) return;
-
-  update(ref(db, "pedidos/" + id), {
-    status: "finalizado",
-    tipo: "local"
-  });
-
-  botao.parentElement.remove();
-};
-</script>
-
-</body>
-</html>
-"https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/olhaentrega.mp3" type="audio/mpeg">
+<audio id="som">
+  <source src="https://raw.githubusercontent.com/realidadelanchesalgadosilvapau-collab/Realidadelanchonete/main/olhaentrega.mp3" type="audio/mpeg">
 </audio>
 
 <button id="btnSom" onclick="ativarSom()">🔊</button>
@@ -158,7 +76,6 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
   
 // 🔥 SUA CONFIG REAL (NÃO MUDA)
-
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
   authDomain: "realidade-60bdb.firebaseapp.com",
@@ -168,7 +85,6 @@ const firebaseConfig = {
   messagingSenderId: "510520738222",
   appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
 };
-
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
