@@ -285,7 +285,7 @@ window.enviar = function() {
 
     // 🔥 SALVA ID NO CELULAR
     localStorage.setItem("pedidoId", novoPedidoRef.key);
-
+acompanharPedido(novoPedidoRef.key);
     // 🔥 DEBUG (DEPOIS VOCÊ PODE APAGAR)
     console.log("ID SALVO:", novoPedidoRef.key);
     alert("ID SALVO: " + novoPedidoRef.key);
@@ -337,9 +337,14 @@ ${chavePix}
 
 if (pedidoId) {
 
-  console.log("Escutando pedido:", pedidoId);
+   acompanharPedido(pedidoId);
+}
+  //acompanhe pedido
+  function acompanharPedido(id) {
 
-  onValue(ref(db, "pedidos/" + pedidoId), (snapshot) => {
+  console.log("Escutando pedido:", id);
+
+  onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
     if (!snapshot.exists()) return;
 
@@ -356,7 +361,6 @@ if (pedidoId) {
 
     document.getElementById("statusTexto").innerText = texto;
 
-    // 🔥 SUMIR QUANDO ENTREGAR
     if (p.status === "entregue") {
       setTimeout(() => {
         localStorage.removeItem("pedidoId");
