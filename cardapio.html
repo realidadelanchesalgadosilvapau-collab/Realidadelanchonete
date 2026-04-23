@@ -118,7 +118,7 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 /* 🔥 CONFIG FIREBASE */
   
@@ -263,17 +263,20 @@ window.enviar = function() {
     `${p.nome} (${p.obs || "sem observação"})`
   ).join("\n");
 
-  push(ref(db, "pedidos"), {
-    cliente,
-    telefone,
-    endereco: endereco || "Retirada",
-    pedido: resumo,
-    total,
-    hora: new Date().toLocaleTimeString(),
-    formaPagamento,
-    statusPagamento: "pendente",
-  }).then(() => {
+ let novoPedidoRef = push(ref(db, "pedidos"));
 
+set(novoPedidoRef, {
+  cliente,
+  telefone,
+  endereco: endereco || "Retirada",
+  pedido: resumo,
+  total,
+  hora: new Date().toLocaleTimeString(),
+  formaPagamento,
+  statusPagamento: "pendente",
+  status: "novo"
+}).then(() => {
+localStorage.setItem("pedidoId", novoPedidoRef.key);
   if (formaPagamento === "pix") {
 
     let mensagem = `
