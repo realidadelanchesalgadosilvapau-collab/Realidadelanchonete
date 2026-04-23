@@ -263,23 +263,33 @@ window.enviar = function() {
     `${p.nome} (${p.obs || "sem observação"})`
   ).join("\n");
 
- let novoPedidoRef = push(ref(db, "pedidos"));
+  // 🔥 CRIA REFERÊNCIA COM ID
+  let novoPedidoRef = push(ref(db, "pedidos"));
 
-set(novoPedidoRef, {
-  cliente,
-  telefone,
-  endereco: endereco || "Retirada",
-  pedido: resumo,
-  total,
-  hora: new Date().toLocaleTimeString(),
-  formaPagamento,
-  statusPagamento: "pendente",
-  status: "novo"
-}).then(() => {
-localStorage.setItem("pedidoId", novoPedidoRef.key);
-  if (formaPagamento === "pix") {
+  // 🔥 SALVA NO FIREBASE
+  set(novoPedidoRef, {
+    cliente,
+    telefone,
+    endereco: endereco || "Retirada",
+    pedido: resumo,
+    total,
+    hora: new Date().toLocaleTimeString(),
+    formaPagamento,
+    statusPagamento: "pendente",
+    status: "novo"
+  })
+  .then(() => {
 
-    let mensagem = `
+    // 🔥 SALVA ID NO CELULAR
+    localStorage.setItem("pedidoId", novoPedidoRef.key);
+
+    // 🔥 DEBUG (DEPOIS VOCÊ PODE APAGAR)
+    console.log("ID SALVO:", novoPedidoRef.key);
+    alert("ID SALVO: " + novoPedidoRef.key);
+
+    if (formaPagamento === "pix") {
+
+      let mensagem = `
 💰 PAGAMENTO VIA PIX
 
 Valor: R$ ${total}
@@ -288,33 +298,37 @@ Chave PIX:
 ${chavePix}
 
 📲 Envie o comprovante no WhatsApp para confirmar seu pedido.
-    `;
+      `;
 
-    alert(mensagem);
+      alert(mensagem);
 
-    let texto = encodeURIComponent(
+      let texto = encodeURIComponent(
 `Pedido realizado!\nTotal: R$ ${total}\nVou enviar o comprovante do PIX.`
-    );
+      );
 
-    window.open(`https://wa.me/11976681884?text=${texto}`);
+      window.open(`https://wa.me/11976681884?text=${texto}`);
 
-  } else {
+    } else {
 
-    alert("Pedido enviado! Pague na entrega.");
+      alert("Pedido enviado! Pague na entrega.");
 
-  }
-
-  // 🔥 LIMPAR PEDIDO (muito importante)
-  pedidos = [];
-  total = 0;
-  atualizarTela();
-
-  document.getElementById("cliente").value = "";
-  document.getElementById("telefone").value = "";
-  document.getElementById("endereco").value = "";
-
-});
     }
+
+    // 🔥 LIMPAR PEDIDO
+    pedidos = [];
+    total = 0;
+    atualizarTela();
+
+    document.getElementById("cliente").value = "";
+    document.getElementById("telefone").value = "";
+    document.getElementById("endereco").value = "";
+
+  })
+  .catch((erro) => {
+    console.log("ERRO AO SALVAR:", erro);
+    alert("Erro ao salvar: " + erro.message);
+  });
+};
 </script>
 
 </body>
