@@ -101,7 +101,10 @@ button {
   <button type="button" class="pagamento ativo" onclick="selecionarPagamento('entrega', this)">💵 Entrega</button>
   <button type="button" class="pagamento" onclick="selecionarPagamento('pix', this)">💳 PIX / Cartão</button>
 </div>
-
+<div id="statusPedido" style="display:none; background:#222; padding:15px; margin-top:10px; border-radius:10px;">
+  <h3>📦 Seu pedido</h3>
+  <div id="statusTexto">Aguardando...</div>
+</div>
 <hr>
 
 <div id="lista"></div>
@@ -329,6 +332,40 @@ ${chavePix}
     alert("Erro ao salvar: " + erro.message);
   });
 };
+  //aqui por o codigo de espera
+  let pedidoId = localStorage.getItem("pedidoId");
+
+if (pedidoId) {
+
+  console.log("Escutando pedido:", pedidoId);
+
+  onValue(ref(db, "pedidos/" + pedidoId), (snapshot) => {
+
+    if (!snapshot.exists()) return;
+
+    let p = snapshot.val();
+
+    document.getElementById("statusPedido").style.display = "block";
+
+    let texto = "⏳ Pedido recebido";
+
+    if (p.status === "novo") texto = "⏳ Pedido recebido";
+    if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
+    if (p.status === "saiu") texto = "🛵 Saiu para entrega";
+    if (p.status === "entregue") texto = "✅ Entregue";
+
+    document.getElementById("statusTexto").innerText = texto;
+
+    // 🔥 SUMIR QUANDO ENTREGAR
+    if (p.status === "entregue") {
+      setTimeout(() => {
+        localStorage.removeItem("pedidoId");
+        document.getElementById("statusPedido").style.display = "none";
+      }, 5000);
+    }
+
+  });
+}
 </script>
 
 </body>
