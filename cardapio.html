@@ -270,18 +270,18 @@ window.enviar = function() {
   let novoPedidoRef = push(ref(db, "pedidos"));
 
   // 🔥 SALVA NO FIREBASE
-  set(novoPedidoRef, {
-    cliente,
-    telefone,
-    endereco: endereco || "Retirada",
-    pedido: resumo,
-    total,
-    hora: new Date().toLocaleTimeString(),
-    formaPagamento,
-    statusPagamento: "pendente",
-    status: "novo"
-  })
-  .then(() => {
+ set(novoPedidoRef, {
+  pedidoId: novoPedidoRef.key, // 🔥 ESSENCIAL
+  cliente,
+  telefone,
+  endereco: endereco || "Retirada",
+  pedido: resumo,
+  total,
+  hora: new Date().toLocaleTimeString(),
+  formaPagamento,
+  statusPagamento: "pendente",
+  status: "novo"
+});.then(() => {
 
     // 🔥 SALVA ID NO CELULAR
     localStorage.setItem("pedidoId", novoPedidoRef.key);
