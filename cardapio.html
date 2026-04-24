@@ -340,42 +340,37 @@ if (pedidoId) {
    acompanharPedido(pedidoId);
 }
   //acompanhe pedido
-function acompanharPedido(id) {
-
-  console.log("Escutando pedido:", id);
-
-  // 👨‍🍳 PEDIDO
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
-    if (!snapshot.exists()) return;
+  if (!snapshot.exists()) return;
 
-    let p = snapshot.val();
+  let p = snapshot.val();
 
-    let statusBox = document.getElementById("statusPedido");
-    let statusTexto = document.getElementById("statusTexto");
+  let statusBox = document.getElementById("statusPedido");
+  let statusTexto = document.getElementById("statusTexto");
 
-    if (!statusBox || !statusTexto) return;
+  if (!statusBox || !statusTexto) return;
 
-    statusBox.style.display = "block";
+  statusBox.style.display = "block";
 
-    let texto = "⏳ Pedido recebido";
+  let texto = "⏳ Pedido recebido";
 
-    if (p.status === "novo") texto = "⏳ Pedido recebido";
-    if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
-    if (p.status === "saiu") texto = "🛵 Saiu para entrega";
-    if (p.status === "entregue") texto = "✅ Entregue";
+  if (p.status === "novo") texto = "⏳ Pedido recebido";
+  if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
+  if (p.status === "saiu") texto = "🛵 Saiu para entrega";
+  if (p.status === "entregue") texto = "✅ Entregue";
 
-    statusTexto.innerText = texto;
+  statusTexto.innerText = texto;
 
-    if (p.status === "entregue") {
-      setTimeout(() => {
-        localStorage.removeItem("pedidoId");
-        statusBox.style.display = "none";
-      }, 5000);
-    }
+  if (p.status === "entregue") {
+    setTimeout(() => {
+      localStorage.removeItem("pedidoId");
+      statusBox.style.display = "none";
+    }, 5000);
+  }
 
-  });
-
+});
+  }
 
 </script>
 
