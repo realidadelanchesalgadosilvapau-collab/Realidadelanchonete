@@ -344,14 +344,15 @@ if (pedidoId) {
 
   console.log("Escutando pedido:", id);
 
-  onValue(ref(db, "pedidos/" + id), (snapshot) => {
+ onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
-    if (!snapshot.exists()) return;
+  if (!snapshot.exists()) return;
 
-    let p = snapshot.val();
+  let p = snapshot.val();
 
-    document.getElementById("statusPedido").style.display = "block";
+  console.log("STATUS DO PEDIDO:", p.status); // 🔥 TESTE
 
+  document.getElementById("statusPedido").style.display = "block";
     let texto = "⏳ Pedido recebido";
 
     if (p.status === "novo") texto = "⏳ Pedido recebido";
