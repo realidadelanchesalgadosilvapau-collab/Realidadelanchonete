@@ -377,55 +377,7 @@ function acompanharPedido(id) {
   });
 
   // 🛵 ENTREGA
-  onValue(ref(db, "entregas_ativas"), (snapshot) => {
 
-    snapshot.forEach(item => {
-
-      let entrega = item.val();
-
-      if (entrega.pedidoId === id) {
-
-        let statusBox = document.getElementById("statusPedido");
-        let statusTexto = document.getElementById("statusTexto");
-
-        if (!statusBox || !statusTexto) return;
-
-        statusBox.style.display = "block";
-        statusTexto.innerText = "🛵 Saiu para entrega";
-      }
-
-    });
-
-  });
-
-  // ✅ FINALIZADO
-  onValue(ref(db, "entregas_finalizadas"), (snapshot) => {
-
-    snapshot.forEach(item => {
-
-      let entrega = item.val();
-
-      if (entrega.pedidoId === id) {
-
-        let statusBox = document.getElementById("statusPedido");
-        let statusTexto = document.getElementById("statusTexto");
-
-        if (!statusBox || !statusTexto) return;
-
-        statusTexto.innerText = "✅ Entregue";
-
-        setTimeout(() => {
-          localStorage.removeItem("pedidoId");
-          statusBox.style.display = "none";
-        }, 5000);
-
-      }
-
-    });
-
-  });
-
-}
 </script>
 
 </body>
