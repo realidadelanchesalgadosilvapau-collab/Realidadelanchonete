@@ -371,6 +371,17 @@ if (pedidoId) {
 
   });
 }
+  window.addEventListener("load", () => {
+
+  let pedidoId = localStorage.getItem("pedidoId");
+
+  console.log("ID NO CELULAR:", pedidoId);
+
+  if (pedidoId) {
+    acompanharPedido(pedidoId);
+  }
+
+});
 </script>
 
 </body>
