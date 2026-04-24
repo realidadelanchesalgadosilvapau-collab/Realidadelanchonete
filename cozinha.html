@@ -198,7 +198,6 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
   lista.prepend(div);
 });
 
-// 🛵 ENVIAR ENTREGA
 window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
@@ -212,19 +211,29 @@ window.enviarEntrega = function(id, botao) {
     push(ref(db, "entregas_ativas"), {
       ...dados,
       pedidoId: id,
-      status: "novo"
-    }).then(() => {
+      status: "saiu"
+    })
+    .then(() => {
 
+      // 🔥 ATUALIZA O PEDIDO (ESSENCIAL)
       update(ref(db, "pedidos/" + id), {
-        status: "pronto",
+        status: "saiu",
         tipo: "delivery"
       });
 
+      // 🔥 REMOVE DA TELA
       botao.parentElement.remove();
+
+      alert("Enviado para o motoboy!");
+
+    })
+    .catch((erro) => {
+      console.log("Erro:", erro);
+      alert("Erro ao enviar entrega");
     });
+
   });
 };
-
 // 🏪 FINALIZAR LOCAL
 window.finalizarLocal = function(id, botao) {
   if (!confirm("Finalizar pedido local?")) return;
