@@ -285,6 +285,7 @@ window.enviar = function() {
 
     // 🔥 SALVA ID NO CELULAR
     localStorage.setItem("pedidoId", novoPedidoRef.key);
+   
 acompanharPedido(novoPedidoRef.key);
     // 🔥 DEBUG (DEPOIS VOCÊ PODE APAGAR)
     console.log("ID SALVO:", novoPedidoRef.key);
@@ -339,38 +340,58 @@ if (pedidoId) {
 
    acompanharPedido(pedidoId);
 }
-  //acompanhe pedido
+
+
+  // 🔥 ACOMPANHAR PEDIDO (CLIENTE)
+window.acompanharPedido = function(id) {
+
+  console.log("Escutando pedido:", id);
+
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
-  if (!snapshot.exists()) return;
+    if (!snapshot.exists()) return;
 
-  let p = snapshot.val();
+    let p = snapshot.val();
 
-  let statusBox = document.getElementById("statusPedido");
-  let statusTexto = document.getElementById("statusTexto");
+    let statusBox = document.getElementById("statusPedido");
+    let statusTexto = document.getElementById("statusTexto");
 
-  if (!statusBox || !statusTexto) return;
+    if (!statusBox || !statusTexto) return;
 
-  statusBox.style.display = "block";
+    statusBox.style.display = "block";
 
-  let texto = "⏳ Pedido recebido";
+    let texto = "⏳ Pedido recebido";
 
-  if (p.status === "novo") texto = "⏳ Pedido recebido";
-  if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
-  if (p.status === "saiu") texto = "🛵 Saiu para entrega";
-  if (p.status === "entregue") texto = "✅ Entregue";
+    if (p.status === "novo") texto = "⏳ Pedido recebido";
+    if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
+    if (p.status === "saiu") texto = "🛵 Saiu para entrega";
+    if (p.status === "entregue") texto = "✅ Entregue";
 
-  statusTexto.innerText = texto;
+    statusTexto.innerText = texto;
 
-  if (p.status === "entregue") {
-    setTimeout(() => {
-      localStorage.removeItem("pedidoId");
-      statusBox.style.display = "none";
-    }, 5000);
+    if (p.status === "entregue") {
+      setTimeout(() => {
+        localStorage.removeItem("pedidoId");
+        statusBox.style.display = "none";
+      }, 5000);
+    }
+
+  });
+
+};
+
+// 🔥 QUANDO ABRIR A PÁGINA, CONTINUA ACOMPANHANDO
+window.addEventListener("load", () => {
+
+  let pedidoId = localStorage.getItem("pedidoId");
+
+  console.log("ID NO CELULAR:", pedidoId);
+
+  if (pedidoId) {
+    acompanharPedido(pedidoId);
   }
 
 });
-  
 </script>
 
 </body>
