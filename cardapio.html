@@ -340,26 +340,44 @@ if (pedidoId) {
    acompanharPedido(pedidoId);
 }
   //acompanhe pedido
- function acompanharPedido(id) {
+function acompanharPedido(id) {
 
   console.log("Escutando pedido:", id);
 
-  // 👨‍🍳 PEDIDO (COZINHA)
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
     if (!snapshot.exists()) return;
 
     let p = snapshot.val();
 
-    document.getElementById("statusPedido").style.display = "block";
+    // 🔥 PROTEÇÃO (não quebra se não existir elemento)
+    let statusBox = document.getElementById("statusPedido");
+    let statusTexto = document.getElementById("statusTexto");
+
+    if (!statusBox || !statusTexto) return;
+
+    statusBox.style.display = "block";
 
     let texto = "⏳ Pedido recebido";
 
     if (p.status === "novo") texto = "⏳ Pedido recebido";
     if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
+    if (p.status === "saiu") texto = "🛵 Saiu para entrega";
+    if (p.status === "entregue") texto = "✅ Entregue";
 
-    document.getElementById("statusTexto").innerText = texto;
+    statusTexto.innerText = texto;
+
+    // 🔥 LIBERA NOVO PEDIDO QUANDO ENTREGUE
+    if (p.status === "entregue") {
+      setTimeout(() => {
+        localStorage.removeItem("pedidoId");
+        statusBox.style.display = "none";
+      }, 5000);
+    }
+
   });
+
+}
 
 
   // 🛵 ENTREGA (MOTOBOY)
