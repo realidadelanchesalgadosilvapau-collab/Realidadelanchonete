@@ -340,36 +340,69 @@ if (pedidoId) {
    acompanharPedido(pedidoId);
 }
   //acompanhe pedido
-  function acompanharPedido(id) {
+ function acompanharPedido(id) {
 
   console.log("Escutando pedido:", id);
 
- onValue(ref(db, "pedidos/" + id), (snapshot) => {
+  // 👨‍🍳 PEDIDO (COZINHA)
+  onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
-  if (!snapshot.exists()) return;
+    if (!snapshot.exists()) return;
 
-  let p = snapshot.val();
+    let p = snapshot.val();
 
-  console.log("STATUS DO PEDIDO:", p.status); // 🔥 TESTE
+    document.getElementById("statusPedido").style.display = "block";
 
-  document.getElementById("statusPedido").style.display = "block";
     let texto = "⏳ Pedido recebido";
 
     if (p.status === "novo") texto = "⏳ Pedido recebido";
     if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
-    if (p.status === "saiu") texto = "🛵 Saiu para entrega";
-    if (p.status === "entregue") texto = "✅ Entregue";
 
     document.getElementById("statusTexto").innerText = texto;
+  });
 
-    if (p.status === "entregue") {
-      setTimeout(() => {
-        localStorage.removeItem("pedidoId");
-        document.getElementById("statusPedido").style.display = "none";
-      }, 5000);
-    }
+
+  // 🛵 ENTREGA (MOTOBOY)
+  onValue(ref(db, "entregas_ativas"), (snapshot) => {
+
+    snapshot.forEach(item => {
+
+      let entrega = item.val();
+
+      if (entrega.pedidoId === id) {
+
+        document.getElementById("statusPedido").style.display = "block";
+        document.getElementById("statusTexto").innerText = "🛵 Saiu para entrega";
+
+      }
+
+    });
 
   });
+
+
+  // ✅ FINALIZADO
+  onValue(ref(db, "entregas_finalizadas"), (snapshot) => {
+
+    snapshot.forEach(item => {
+
+      let entrega = item.val();
+
+      if (entrega.pedidoId === id) {
+
+        document.getElementById("statusTexto").innerText = "✅ Entregue";
+
+        setTimeout(() => {
+          localStorage.removeItem("pedidoId");
+          document.getElementById("statusPedido").style.display = "none";
+        }, 5000);
+
+      }
+
+    });
+
+  });
+
 }
   window.addEventListener("load", () => {
 
