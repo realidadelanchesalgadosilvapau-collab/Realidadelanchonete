@@ -284,9 +284,9 @@ window.enviar = function() {
 }).then(() => {
 
     // 🔥 SALVA ID NO CELULAR
-    localStorage.setItem("pedidoId", novoPedidoRef.key);
+   localStorage.setItem("pedidoId", novoPedidoRef.key);
    
-acompanharPedido(novoPedidoRef.key);
+window.acompanharPedido(novoPedidoRef.key); 
     // 🔥 DEBUG (DEPOIS VOCÊ PODE APAGAR)
     console.log("ID SALVO:", novoPedidoRef.key);
     alert("ID SALVO: " + novoPedidoRef.key);
@@ -334,11 +334,10 @@ ${chavePix}
   });
 };
   //aqui por o codigo de espera
-  let pedidoId = localStorage.getItem("pedidoId");
+ let pedidoId = localStorage.getItem("pedidoId");
 
 if (pedidoId) {
-
-   acompanharPedido(pedidoId);
+   window.acompanharPedido(pedidoId);
 }
 
 
@@ -388,9 +387,8 @@ window.addEventListener("load", () => {
   console.log("ID NO CELULAR:", pedidoId);
 
   if (pedidoId) {
-    acompanharPedido(pedidoId);
-  }
-
+  window.acompanharPedido(pedidoId);
+}
 });
 </script>
 
