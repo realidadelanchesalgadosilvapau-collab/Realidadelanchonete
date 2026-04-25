@@ -242,11 +242,13 @@ window.enviarEntrega = function(id, botao) {
   // lanche em preparo
   window.marcarPreparo = function(id, botao) {
 
+  console.log("ID RECEBIDO:", id);
+
   update(ref(db, "pedidos/" + id), {
     status: "preparo"
   });
 
-  console.log("STATUS ALTERADO PARA PREPARO:", id);
+  console.log("Atualizou para preparo");
 
   botao.disabled = true;
 };
