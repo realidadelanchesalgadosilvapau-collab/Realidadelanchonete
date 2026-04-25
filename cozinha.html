@@ -165,8 +165,7 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
   let div = document.createElement("div");
   div.className = "pedido";
 
-  let botoes = "";
-
+  
   let botoes = `
   <button onclick="marcarPreparo('${snapshot.key}', this)">
     👨‍🍳 Em preparo
@@ -186,7 +185,6 @@ if (p.tipo === "local") {
     </button>
   `;
 }
-
 
   div.innerHTML = `
     <strong>👤 ${p.cliente}</strong><br>
