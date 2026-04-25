@@ -332,13 +332,15 @@ ${chavePix}
     alert("Erro ao salvar: " + erro.message);
   });
 };
-  //aqui por o codigo de espera
-  let pedidoId = localStorage.getItem("pedidoId");
+  //aqui por o codigo de espera remover depis 
+  //let pedidoId = localStorage.getItem("pedidoId");
 
-if (pedidoId) {
+//if (pedidoId) {
 
-   acompanharPedido(pedidoId);
-}
+  // acompanharPedido(pedidoId);
+//}
+
+//termina aqui
   //acompanhe pedido
  function acompanharPedido(id) {
 
@@ -360,31 +362,19 @@ if (pedidoId) {
 
     document.getElementById("statusTexto").innerText = texto;
   });
- }
-  }
-  }
-//por aqui o codigo do motoboy
-  // 🛵 ENTREGA (MOTOBOY)
 
 
-//poe aqi o codigo finalizado
-  // ✅ FINALIZADO
+  
 
-
+}
   window.addEventListener("load", () => {
 
   let pedidoId = localStorage.getItem("pedidoId");
 
   console.log("ID NO CELULAR:", pedidoId);
 
-//  if (pedidoId) {
-//    acompanharPedido(pedidoId);
-    let texto = "⏳ Pedido recebido";
-
-if (p.status === "novo") texto = "⏳ Pedido recebido";
-if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
-if (p.status === "saiu") texto = "🛵 Saiu para entrega";
-if (p.status === "entregue") texto = "✅ Entregue";
+  if (pedidoId) {
+    acompanharPedido(pedidoId);
   }
 
 });
@@ -392,4 +382,3 @@ if (p.status === "entregue") texto = "✅ Entregue";
 
 </body>
 </html>
-
