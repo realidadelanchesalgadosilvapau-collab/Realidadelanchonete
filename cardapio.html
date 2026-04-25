@@ -121,7 +121,7 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 console.log("SCRIPT RODANDO");
 /* 🔥 CONFIG FIREBASE */
   
@@ -355,6 +355,39 @@ window.marcarPreparo = function(id, botao) {
   });
 
 };
+  function acompanharPedido(id) {
+
+  console.log("Escutando pedido:", id);
+
+  onValue(ref(db, "pedidos/" + id), (snapshot) => {
+
+    console.log("STATUS CHEGANDO:", snapshot.val());
+
+    if (!snapshot.exists()) return;
+
+    let p = snapshot.val();
+
+    document.getElementById("statusPedido").style.display = "block";
+
+    let texto = "⏳ Pedido recebido";
+
+    if (p.status === "novo") texto = "⏳ Pedido recebido";
+    if (p.status === "preparo") texto = "👨‍🍳 Preparando o lanche";
+    if (p.status === "saiu") texto = "🛵 Saiu para entrega";
+    if (p.status === "entregue") texto = "✅ Entregue";
+
+    document.getElementById("statusTexto").innerText = texto;
+
+    if (p.status === "entregue") {
+      setTimeout(() => {
+        localStorage.removeItem("pedidoId");
+        document.getElementById("statusPedido").style.display = "none";
+      }, 5000);
+    }
+
+  });
+
+}
   window.addEventListener("load", () => {
 
   let pedidoId = localStorage.getItem("pedidoId");
