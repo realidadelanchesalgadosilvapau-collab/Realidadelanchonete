@@ -102,17 +102,7 @@ const auth = getAuth(app);
 
 const lista = document.getElementById("lista");
 const som = document.getElementById("som");
-  function iniciarPreparo(id) {
-  update(ref(db, "pedidos/" + id), {
-    status: "preparo"
-  });
-}
 
-function enviarMotoboy(id) {
-  update(ref(db, "pedidos/" + id), {
-    status: "saiu"
-  });
-}
 let liberado = false;
 
 // 🔐 LOGIN
@@ -259,3 +249,4 @@ window.finalizarLocal = function(id, botao) {
 
 </body>
 </html>
+
