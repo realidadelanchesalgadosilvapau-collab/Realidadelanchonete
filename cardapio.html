@@ -333,13 +333,11 @@ ${chavePix}
   });
 };
 // mudando codigo acompahapedido
-  function acompanharPedido(id) {
-
-  console.log("Escutando pedido:", id);
+ function acompanharPedido(id) {
 
   let statusAtual = "";
 
-  // 🔥 PEDIDO (novo / preparo / saiu / entregue)
+  // 🔥 PEDIDOS
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
     if (!snapshot.exists()) return;
@@ -353,26 +351,28 @@ ${chavePix}
     if (p.status === "saiu") texto = "🛵 Saiu para entrega";
     if (p.status === "entregue") texto = "✅ Entregue";
 
-    if (texto && texto !== statusAtual) {
+    if (texto && statusAtual !== texto) {
       statusAtual = texto;
       atualizarStatus(texto);
     }
 
   });
 
-  // 🛵 ENTREGA (GARANTE QUE APAREÇA)
+  // 🛵 ENTREGA (SÓ SE NÃO ESTIVER EM PREPARO)
   onValue(ref(db, "entregas_ativas"), (snapshot) => {
 
     snapshot.forEach(item => {
       let entrega = item.val();
 
-      if (entrega.pedidoId === id) {
+      if (entrega.pedidoId === id && statusAtual !== "👨‍🍳 Preparando o lanche") {
+
         let texto = "🛵 Saiu para entrega";
 
-        if (texto !== statusAtual) {
+        if (statusAtual !== texto) {
           statusAtual = texto;
           atualizarStatus(texto);
         }
+
       }
     });
 
@@ -388,7 +388,7 @@ ${chavePix}
 
         let texto = "✅ Entregue";
 
-        if (texto !== statusAtual) {
+        if (statusAtual !== texto) {
           statusAtual = texto;
           atualizarStatus(texto);
         }
@@ -403,10 +403,6 @@ ${chavePix}
 
   });
 
-}
-  function atualizarStatus(texto) {
-  document.getElementById("statusPedido").style.display = "block";
-  document.getElementById("statusTexto").innerText = texto;
 }
 
 
