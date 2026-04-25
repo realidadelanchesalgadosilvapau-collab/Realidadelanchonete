@@ -333,79 +333,28 @@ ${chavePix}
   });
 };
 // mudando codigo acompahapedido
- function acompanharPedido(id) {
+window.marcarPreparo = function(id, botao) {
 
-  let statusAtual = "";
+  let pedidoRef = ref(db, "pedidos/" + id);
 
-  // 🔥 PEDIDOS
-  onValue(ref(db, "pedidos/" + id), (snapshot) => {
+  get(pedidoRef).then((snapshot) => {
 
     if (!snapshot.exists()) return;
 
-    let p = snapshot.val();
+    let dados = snapshot.val();
 
-    let texto = "";
-
-    if (p.status === "novo") texto = "⏳ Pedido recebido";
-    if (p.status === "preparo") texto = "👨‍🍳 Preparando o lanche";
-    if (p.status === "saiu") texto = "🛵 Saiu para entrega";
-    if (p.status === "entregue") texto = "✅ Entregue";
-
-    if (texto && statusAtual !== texto) {
-      statusAtual = texto;
-      atualizarStatus(texto);
-    }
-
-  });
-
-  // 🛵 ENTREGA (SÓ SE NÃO ESTIVER EM PREPARO)
-  onValue(ref(db, "entregas_ativas"), (snapshot) => {
-
-    snapshot.forEach(item => {
-      let entrega = item.val();
-
-      if (entrega.pedidoId === id && statusAtual !== "👨‍🍳 Preparando o lanche") {
-
-        let texto = "🛵 Saiu para entrega";
-
-        if (statusAtual !== texto) {
-          statusAtual = texto;
-          atualizarStatus(texto);
-        }
-
-      }
+    push(ref(db, "entregas_ativas"), {
+      ...dados,
+      pedidoId: id,
+      status: "preparo"
     });
 
-  });
-
-  // ✅ FINALIZADO
-  onValue(ref(db, "entregas_finalizadas"), (snapshot) => {
-
-    snapshot.forEach(item => {
-      let entrega = item.val();
-
-      if (entrega.pedidoId === id) {
-
-        let texto = "✅ Entregue";
-
-        if (statusAtual !== texto) {
-          statusAtual = texto;
-          atualizarStatus(texto);
-        }
-
-        setTimeout(() => {
-          localStorage.removeItem("pedidoId");
-          document.getElementById("statusPedido").style.display = "none";
-        }, 5000);
-
-      }
-    });
+    // remove da tela da cozinha (opcional)
+    botao.parentElement.remove();
 
   });
 
-}
-
-
+};
   window.addEventListener("load", () => {
 
   let pedidoId = localStorage.getItem("pedidoId");
