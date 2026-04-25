@@ -239,18 +239,36 @@ window.enviarEntrega = function(id, botao) {
 
   });
 };
-  // lanche em preparo
-  window.marcarPreparo = function(id, botao) {
+window.marcarPreparo = function(id, botao) {
 
   console.log("ID RECEBIDO:", id);
 
-  update(ref(db, "pedidos/" + id), {
-    status: "preparo"
+  let pedidoRef = ref(db, "pedidos/" + id);
+
+  get(pedidoRef).then((snapshot) => {
+
+    if (!snapshot.exists()) return;
+
+    let dados = snapshot.val();
+
+    // 🔥 ATUALIZA PEDIDOS
+    update(pedidoRef, {
+      status: "preparo"
+    });
+
+    // 🔥 ENVIA PRA ENTREGAS_ATIVAS (igual motoboy)
+    push(ref(db, "entregas_ativas"), {
+      ...dados,
+      pedidoId: id,
+      status: "preparo"
+    });
+
+    console.log("Mandou preparo pro Firebase");
+
+    botao.disabled = true;
+
   });
 
-  console.log("Atualizou para preparo");
-
-  botao.disabled = true;
 };
 // 🏪 FINALIZAR LOCAL
 window.finalizarLocal = function(id, botao) {
