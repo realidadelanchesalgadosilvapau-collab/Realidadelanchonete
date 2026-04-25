@@ -363,55 +363,61 @@ if (pedidoId) {
 
 
   // 🛵 ENTREGA (MOTOBOY)
-  onValue(ref(db, "entregas_ativas"), (snapshot) => {
+ // onValue(ref(db, "entregas_ativas"), (snapshot) => {
 
-    snapshot.forEach(item => {
+  //  snapshot.forEach(item => {
 
-      let entrega = item.val();
+   //   let entrega = item.val();
 
-      if (entrega.pedidoId === id) {
+   //   if (entrega.pedidoId === id) {
 
-        document.getElementById("statusPedido").style.display = "block";
-        document.getElementById("statusTexto").innerText = "🛵 Saiu para entrega";
+    //    document.getElementById("statusPedido").style.display = "block";
+    //    document.getElementById("statusTexto").innerText = "🛵 Saiu para entrega";
 
-      }
+   //   }
 
-    });
+  //  });
 
-  });
+//  });
 
 
   // ✅ FINALIZADO
-  onValue(ref(db, "entregas_finalizadas"), (snapshot) => {
+//  onValue(ref(db, "entregas_finalizadas"), (snapshot) => {
 
-    snapshot.forEach(item => {
+ //   snapshot.forEach(item => {
 
-      let entrega = item.val();
+ //     let entrega = item.val();
 
-      if (entrega.pedidoId === id) {
+  //    if (entrega.pedidoId === id) {
 
-        document.getElementById("statusTexto").innerText = "✅ Entregue";
+   //     document.getElementById("statusTexto").innerText = "✅ Entregue";
 
-        setTimeout(() => {
-          localStorage.removeItem("pedidoId");
-          document.getElementById("statusPedido").style.display = "none";
-        }, 5000);
+      //  setTimeout(() => {
+       //   localStorage.removeItem("pedidoId");
+       //   document.getElementById("statusPedido").style.display = "none";
+     //   }, 5000);
 
-      }
+    //  }
 
-    });
+  //  });
 
-  });
+//  });
 
-}
+//}
   window.addEventListener("load", () => {
 
   let pedidoId = localStorage.getItem("pedidoId");
 
   console.log("ID NO CELULAR:", pedidoId);
 
-  if (pedidoId) {
-    acompanharPedido(pedidoId);
+//  if (pedidoId) {
+//    acompanharPedido(pedidoId);
+    let texto = "⏳ Pedido recebido";
+
+if (p.status === "novo") texto = "⏳ Pedido recebido";
+if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
+if (p.status === "saiu") texto = "🛵 Saiu para entrega";
+if (p.status === "entregue") texto = "✅ Entregue";
   }
 
 });
