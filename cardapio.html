@@ -155,43 +155,7 @@ document.getElementById("telefone").addEventListener("input", function() {
 });
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-  // 🔥 ACOMPANHAR PEDIDO (CLIENTE)
-window.acompanharPedido = function(id) {
 
-  console.log("Escutando pedido:", id);
-
-  onValue(ref(db, "pedidos/" + id), (snapshot) => {
-
-    if (!snapshot.exists()) return;
-
-    let p = snapshot.val();
-
-    let statusBox = document.getElementById("statusPedido");
-    let statusTexto = document.getElementById("statusTexto");
-
-    if (!statusBox || !statusTexto) return;
-
-    statusBox.style.display = "block";
-
-    let texto = "⏳ Pedido recebido";
-
-    if (p.status === "novo") texto = "⏳ Pedido recebido";
-    if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
-    if (p.status === "saiu") texto = "🛵 Saiu para entrega";
-    if (p.status === "entregue") texto = "✅ Entregue";
-
-    statusTexto.innerText = texto;
-
-    if (p.status === "entregue") {
-      setTimeout(() => {
-        localStorage.removeItem("pedidoId");
-        statusBox.style.display = "none";
-      }, 5000);
-    }
-
-  });
-
-};
 /* 🔥 VARIÁVEIS GLOBAIS (IMPORTANTE) */
 let pedidos = [];
 let produtos = [];
@@ -320,9 +284,8 @@ window.enviar = function() {
 }).then(() => {
 
     // 🔥 SALVA ID NO CELULAR
-   localStorage.setItem("pedidoId", novoPedidoRef.key);
-   
-window.acompanharPedido(novoPedidoRef.key); 
+    localStorage.setItem("pedidoId", novoPedidoRef.key);
+acompanharPedido(novoPedidoRef.key);
     // 🔥 DEBUG (DEPOIS VOCÊ PODE APAGAR)
     console.log("ID SALVO:", novoPedidoRef.key);
     alert("ID SALVO: " + novoPedidoRef.key);
@@ -370,25 +333,90 @@ ${chavePix}
   });
 };
   //aqui por o codigo de espera
- let pedidoId = localStorage.getItem("pedidoId");
+  let pedidoId = localStorage.getItem("pedidoId");
 
 if (pedidoId) {
-   window.acompanharPedido(pedidoId);
+
+   acompanharPedido(pedidoId);
 }
+  //acompanhe pedido
+ function acompanharPedido(id) {
+
+  console.log("Escutando pedido:", id);
+
+  // 👨‍🍳 PEDIDO (COZINHA)
+  onValue(ref(db, "pedidos/" + id), (snapshot) => {
+
+    if (!snapshot.exists()) return;
+
+    let p = snapshot.val();
+
+    document.getElementById("statusPedido").style.display = "block";
+
+    let texto = "⏳ Pedido recebido";
+
+    if (p.status === "novo") texto = "⏳ Pedido recebido";
+    if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
+
+    document.getElementById("statusTexto").innerText = texto;
+  });
 
 
-// 🔥 QUANDO ABRIR A PÁGINA, CONTINUA ACOMPANHANDO
-window.addEventListener("load", () => {
+  // 🛵 ENTREGA (MOTOBOY)
+  onValue(ref(db, "entregas_ativas"), (snapshot) => {
+
+    snapshot.forEach(item => {
+
+      let entrega = item.val();
+
+      if (entrega.pedidoId === id) {
+
+        document.getElementById("statusPedido").style.display = "block";
+        document.getElementById("statusTexto").innerText = "🛵 Saiu para entrega";
+
+      }
+
+    });
+
+  });
+
+
+  // ✅ FINALIZADO
+  onValue(ref(db, "entregas_finalizadas"), (snapshot) => {
+
+    snapshot.forEach(item => {
+
+      let entrega = item.val();
+
+      if (entrega.pedidoId === id) {
+
+        document.getElementById("statusTexto").innerText = "✅ Entregue";
+
+        setTimeout(() => {
+          localStorage.removeItem("pedidoId");
+          document.getElementById("statusPedido").style.display = "none";
+        }, 5000);
+
+      }
+
+    });
+
+  });
+
+}
+  window.addEventListener("load", () => {
 
   let pedidoId = localStorage.getItem("pedidoId");
 
   console.log("ID NO CELULAR:", pedidoId);
 
   if (pedidoId) {
-  window.acompanharPedido(pedidoId);
-}
+    acompanharPedido(pedidoId);
+  }
+
 });
 </script>
 
 </body>
 </html>
+
