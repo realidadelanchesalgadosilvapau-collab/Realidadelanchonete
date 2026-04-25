@@ -332,41 +332,82 @@ ${chavePix}
     alert("Erro ao salvar: " + erro.message);
   });
 };
-function acompanharPedido(id) {
+// mudando codigo acompahapedido
+  function acompanharPedido(id) {
 
   console.log("Escutando pedido:", id);
 
-  onValue(ref(db, "pedidos/" + id), (snapshot) => {
+  let statusAtual = "";
 
-    console.log("STATUS CHEGANDO:", snapshot.val());
+  // 🔥 PEDIDO (novo / preparo / saiu / entregue)
+  onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
     if (!snapshot.exists()) return;
 
     let p = snapshot.val();
 
-    document.getElementById("statusPedido").style.display = "block";
-
-    let texto = "⏳ Pedido recebido";
+    let texto = "";
 
     if (p.status === "novo") texto = "⏳ Pedido recebido";
     if (p.status === "preparo") texto = "👨‍🍳 Preparando o lanche";
     if (p.status === "saiu") texto = "🛵 Saiu para entrega";
     if (p.status === "entregue") texto = "✅ Entregue";
 
-    document.getElementById("statusTexto").innerText = texto;
-
-    if (p.status === "entregue") {
-      setTimeout(() => {
-        localStorage.removeItem("pedidoId");
-        document.getElementById("statusPedido").style.display = "none";
-      }, 5000);
+    if (texto && texto !== statusAtual) {
+      statusAtual = texto;
+      atualizarStatus(texto);
     }
 
   });
 
-}
+  // 🛵 ENTREGA (GARANTE QUE APAREÇA)
+  onValue(ref(db, "entregas_ativas"), (snapshot) => {
 
-  
+    snapshot.forEach(item => {
+      let entrega = item.val();
+
+      if (entrega.pedidoId === id) {
+        let texto = "🛵 Saiu para entrega";
+
+        if (texto !== statusAtual) {
+          statusAtual = texto;
+          atualizarStatus(texto);
+        }
+      }
+    });
+
+  });
+
+  // ✅ FINALIZADO
+  onValue(ref(db, "entregas_finalizadas"), (snapshot) => {
+
+    snapshot.forEach(item => {
+      let entrega = item.val();
+
+      if (entrega.pedidoId === id) {
+
+        let texto = "✅ Entregue";
+
+        if (texto !== statusAtual) {
+          statusAtual = texto;
+          atualizarStatus(texto);
+        }
+
+        setTimeout(() => {
+          localStorage.removeItem("pedidoId");
+          document.getElementById("statusPedido").style.display = "none";
+        }, 5000);
+
+      }
+    });
+
+  });
+
+}
+  function atualizarStatus(texto) {
+  document.getElementById("statusPedido").style.display = "block";
+  document.getElementById("statusTexto").innerText = texto;
+}
 
 
   window.addEventListener("load", () => {
