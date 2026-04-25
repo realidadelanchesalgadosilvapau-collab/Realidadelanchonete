@@ -239,6 +239,17 @@ window.enviarEntrega = function(id, botao) {
 
   });
 };
+  // lanche em preparo
+  window.marcarPreparo = function(id, botao) {
+
+  update(ref(db, "pedidos/" + id), {
+    status: "preparo"
+  });
+
+  console.log("STATUS ALTERADO PARA PREPARO:", id);
+
+  botao.disabled = true;
+};
 // 🏪 FINALIZAR LOCAL
 window.finalizarLocal = function(id, botao) {
   if (!confirm("Finalizar pedido local?")) return;
