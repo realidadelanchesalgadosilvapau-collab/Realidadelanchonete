@@ -167,7 +167,7 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
 
   let botoes = "";
 
-  
+  let botoes = `
   <button onclick="marcarPreparo('${snapshot.key}', this)">
     👨‍🍳 Em preparo
   </button>
@@ -187,6 +187,7 @@ if (p.tipo === "local") {
   `;
 }
 } 
+             }
 
   div.innerHTML = `
     <strong>👤 ${p.cliente}</strong><br>
