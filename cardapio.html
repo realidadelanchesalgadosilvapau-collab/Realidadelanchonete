@@ -122,7 +122,7 @@ button {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-
+console.log("SCRIPT RODANDO");
 /* 🔥 CONFIG FIREBASE */
   
 const firebaseConfig = {
@@ -174,9 +174,9 @@ window.selecionarPagamento = function(tipo, el) {
 };
 
 /* 🔥 TELEFONE NUMÉRICO */
-document.getElementById("telefone").addEventListener("input", function() {
-  this.value = this.value.replace(/\D/g, "");
-});
+//document.getElementById("telefone").addEventListener("input", function() {
+//  this.value = this.value.replace(/\D/g, "");
+//});
 
 /* 🔥 CARREGAR PRODUTOS */
 onValue(ref(db, "produtos"), (snapshot) => {
@@ -380,6 +380,7 @@ function acompanharPedido(id) {
   }
 
 });
+  console.log("SCRIPT FINALIZOU");
 </script>
 
 </body>
