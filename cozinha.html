@@ -167,19 +167,26 @@ onChildAdded(ref(db, "pedidos"), (snapshot) => {
 
   let botoes = "";
 
-  if (p.tipo === "local") {
-    botoes = `
-      <button class="btn-local" onclick="finalizarLocal('${snapshot.key}', this)">
-        🏪 Pronto (Local)
-      </button>
-    `;
-  } else {
-    botoes = `
-      <button class="btn-entrega" onclick="enviarEntrega('${snapshot.key}', this)">
-        🛵 Enviar para Entrega
-      </button>
-    `;
-  }
+  let botoes = `
+  <button onclick="marcarPreparo('${snapshot.key}', this)">
+    👨‍🍳 Em preparo
+  </button>
+`;
+
+if (p.tipo === "local") {
+  botoes += `
+    <button class="btn-local" onclick="finalizarLocal('${snapshot.key}', this)">
+      🏪 Pronto (Local)
+    </button>
+  `;
+} else {
+  botoes += `
+    <button class="btn-entrega" onclick="enviarEntrega('${snapshot.key}', this)">
+      🛵 Enviar para Entrega
+    </button>
+  `;
+}
+  
 
   div.innerHTML = `
     <strong>👤 ${p.cliente}</strong><br>
