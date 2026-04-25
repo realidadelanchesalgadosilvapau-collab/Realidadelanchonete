@@ -347,10 +347,12 @@ ${chavePix}
   console.log("Escutando pedido:", id);
 
   // 👨‍🍳 PEDIDO (COZINHA)
-  onValue(ref(db, "pedidos/" + id), (snapshot) => {
+onValue(ref(db, "pedidos/" + id), (snapshot) => {
 
-    if (!snapshot.exists()) return;
+  console.log("STATUS CHEGANDO:", snapshot.val());
 
+  if (!snapshot.exists()) return;
+  
     let p = snapshot.val();
 
     document.getElementById("statusPedido").style.display = "block";
