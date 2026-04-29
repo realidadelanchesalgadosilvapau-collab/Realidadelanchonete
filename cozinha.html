@@ -246,32 +246,11 @@ if (p.tipo === "local") {
     //botao preparo
 window.marcarPreparo = function(id, botao) {
 
-  let pedidoRef = ref(db, "pedidos/" + id);
-
-  get(pedidoRef).then((snapshot) => {
-
-    if (!snapshot.exists()) return;
-
-    let dados = snapshot.val();
-
-    // cria entrega
-    let entregaRef = push(ref(db, "entregas_ativas"));
-
-    set(entregaRef, {
-      ...dados,
-      pedidoId: id,
-      status: "preparo"
-    });
-
-    // salva id da entrega no pedido
-    update(pedidoRef, {
-      status: "preparo",
-      entregaId: entregaRef.key
-    });
-
-    botao.disabled = true;
-
+  update(ref(db, "pedidos/" + id), {
+    status: "preparo"
   });
+
+  botao.disabled = true;
 
 };
 // 🏪 FINALIZAR LOCAL
