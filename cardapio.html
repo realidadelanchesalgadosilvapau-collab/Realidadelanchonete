@@ -127,7 +127,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/fireba
 import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 /* 🔥 CONFIG FIREBASE */
-  
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
   authDomain: "realidade-60bdb.firebaseapp.com",
@@ -137,291 +136,141 @@ const firebaseConfig = {
   messagingSenderId: "510520738222",
   appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
 };
-document.getElementById("telefone").addEventListener("input", function() {
-  this.value = this.value.replace(/\D/g, "");
-});
-  document.getElementById("cep").addEventListener("blur", function() {
-  let cep = this.value.replace(/\D/g, "");
 
-  if (cep.length !== 8) return;
-
-  fetch(`https://viacep.com.br/ws/${cep}/json/`)
-    .then(res => res.json())
-    .then(dados => {
-      if (!dados.erro) {
-        document.getElementById("endereco").value =
-          dados.logradouro + ", " +
-          dados.bairro + " - " +
-          dados.localidade;
-      }
-    });
-});
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* 🔥 VARIÁVEIS GLOBAIS (IMPORTANTE) */
+/* 🔥 VARIÁVEIS GLOBAIS */
 let pedidos = [];
 let produtos = [];
 let total = 0;
 let formaPagamento = "entrega";
-let chavePix = "SEU_PIX_AQUI"; // telefone, cpf ou email
-/* 🔥 ESCOLHER PAGAMENTO */
+let chavePix = "SEU_PIX_AQUI"; 
+
+// CEP Auto-completar
+document.getElementById("cep").addEventListener("blur", function() {
+  let cep = this.value.replace(/\D/g, "");
+  if (cep.length !== 8) return;
+  fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(res => res.json())
+    .then(dados => {
+      if (!dados.erro) {
+        document.getElementById("endereco").value = dados.logradouro + ", " + dados.bairro + " - " + dados.localidade;
+      }
+    });
+});
+
 window.selecionarPagamento = function(tipo, el) {
   formaPagamento = tipo;
-
-  document.querySelectorAll(".pagamento").forEach(btn => {
-    btn.classList.remove("ativo");
-  });
-
+  document.querySelectorAll(".pagamento").forEach(btn => btn.classList.remove("ativo"));
   el.classList.add("ativo");
 };
-
-/* 🔥 TELEFONE NUMÉRICO */
-document.getElementById("telefone").addEventListener("input", function() {
-  this.value = this.value.replace(/\D/g, "");
-});
 
 /* 🔥 CARREGAR PRODUTOS */
 onValue(ref(db, "produtos"), (snapshot) => {
   produtos = [];
-
-  snapshot.forEach(item => {
-    produtos.push(item.val());
-  });
-
+  snapshot.forEach(item => { produtos.push(item.val()); });
   carregarProdutos();
 });
 
-/* 🔥 MOSTRAR CARDÁPIO */
 function carregarProdutos() {
   let div = document.getElementById("cardapio");
   div.innerHTML = "";
-
   produtos.forEach((p, i) => {
     div.innerHTML += `
       <div class="card" onclick="selecionar(${i})">
-        <img src="${p.imagem ? p.imagem : 'https://via.placeholder.com/150'}"
-             onerror="this.src='https://via.placeholder.com/150'">
+        <img src="${p.imagem ? p.imagem : 'https://via.placeholder.com/150'}" onerror="this.src='https://via.placeholder.com/150'">
         <strong>${p.nome}</strong><br>
         R$ ${p.preco}
       </div>
     `;
   });
-
-  if (produtos.length > 0) {
-    document.getElementById("foto").src = produtos[0].imagem || "";
-  }
+  if (produtos.length > 0) document.getElementById("foto").src = produtos[0].imagem || "";
 }
 
-/* 🔥 CLICAR NO PRODUTO */
 window.selecionar = function(index) {
   let produto = produtos[index];
-
   document.getElementById("foto").src = produto.imagem || "";
-
   let obs = prompt("Observação?");
-
-  pedidos.push({
-    nome: produto.nome,
-    preco: produto.preco,
-    obs: obs || ""
-  });
-
+  pedidos.push({ nome: produto.nome, preco: produto.preco, obs: obs || "" });
   total += produto.preco;
   atualizarTela();
 };
 
-/* 🔥 ATUALIZAR TELA */
 function atualizarTela() {
   let lista = document.getElementById("lista");
   lista.innerHTML = "";
-
   pedidos.forEach(item => {
-    lista.innerHTML += `
-      <div class="item">
-        ${item.nome}
-        <br><small>${item.obs}</small>
-      </div>
-    `;
+    lista.innerHTML += `<div class="item">${item.nome}<br><small>${item.obs}</small></div>`;
   });
-
   document.getElementById("total").innerText = total;
 }
 
 /* 🔥 ENVIAR PEDIDO */
 window.enviar = function() {
-
   let cliente = document.getElementById("cliente").value;
   let telefone = document.getElementById("telefone").value;
   let endereco = document.getElementById("endereco").value;
 
-  if (!cliente || !telefone) {
-    alert("Preencha nome e telefone");
-    return;
-  }
+  if (!cliente || !telefone) { alert("Preencha nome e telefone"); return; }
+  if (pedidos.length === 0) { alert("Adicione itens"); return; }
 
-  if (pedidos.length === 0) {
-    alert("Adicione itens");
-    return;
-  }
-
-  let resumo = pedidos.map(p =>
-    `${p.nome} (${p.obs || "sem observação"})`
-  ).join("\n");
-
-  // 🔥 CRIA REFERÊNCIA COM ID
+  let resumo = pedidos.map(p => `${p.nome} (${p.obs || "sem obs"})`).join("\n");
   let novoPedidoRef = push(ref(db, "pedidos"));
 
-  // 🔥 SALVA NO FIREBASE
- set(novoPedidoRef, {
-  pedidoId: novoPedidoRef.key, // 🔥 ESSENCIAL
-  cliente,
-  telefone,
-  endereco: endereco || "Retirada",
-  pedido: resumo,
-  total,
-  hora: new Date().toLocaleTimeString(),
-  formaPagamento,
-  statusPagamento: "pendente",
-  status: "novo"
-}).then(() => {
-
-    // 🔥 SALVA ID NO CELULAR
+  set(novoPedidoRef, {
+    pedidoId: novoPedidoRef.key,
+    cliente, telefone, endereco: endereco || "Retirada",
+    pedido: resumo, total,
+    hora: new Date().toLocaleTimeString(),
+    formaPagamento, status: "novo"
+  }).then(() => {
     localStorage.setItem("pedidoId", novoPedidoRef.key);
-acompanharPedido(novoPedidoRef.key);
-    // 🔥 DEBUG (DEPOIS VOCÊ PODE APAGAR)
-    console.log("ID SALVO:", novoPedidoRef.key);
-    alert("ID SALVO: " + novoPedidoRef.key);
-
+    acompanharPedido(novoPedidoRef.key);
+    
     if (formaPagamento === "pix") {
-
-      let mensagem = `
-💰 PAGAMENTO VIA PIX
-
-Valor: R$ ${total}
-
-Chave PIX:
-${chavePix}
-
-📲 Envie o comprovante no WhatsApp para confirmar seu pedido.
-      `;
-
-      alert(mensagem);
-
-      let texto = encodeURIComponent(
-`Pedido realizado!\nTotal: R$ ${total}\nVou enviar o comprovante do PIX.`
-      );
-
-      window.open(`https://wa.me/11976681884?text=${texto}`);
-
+      window.open(`https://wa.me/11976681884?text=Pedido realizado! Total: R$ ${total}`);
     } else {
-
-      alert("Pedido enviado! Pague na entrega.");
-
+      alert("Pedido enviado!");
     }
 
-    // 🔥 LIMPAR PEDIDO
-    pedidos = [];
-    total = 0;
-    atualizarTela();
-
+    pedidos = []; total = 0; atualizarTela();
     document.getElementById("cliente").value = "";
     document.getElementById("telefone").value = "";
     document.getElementById("endereco").value = "";
-
-  })
-  .catch((erro) => {
-    console.log("ERRO AO SALVAR:", erro);
-    alert("Erro ao salvar: " + erro.message);
   });
 };
-  //aqui por o codigo de espera remover depis 
-  //let pedidoId = localStorage.getItem("pedidoId");
 
-//if (pedidoId) {
-
-  // acompanharPedido(pedidoId);
-//}
-
-//termina aqui
-  //acompanhe pedido
+/* 🔥 ACOMPANHAR PEDIDO (AQUI ESTÁ A CORREÇÃO) */
 function acompanharPedido(id) {
   if (!id) return;
-  
-  // Ouvinte ÚNICO e EXCLUSIVO na pasta pedidos
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
     const p = snapshot.val();
     const statusTexto = document.getElementById("statusTexto");
     const statusBox = document.getElementById("statusPedido");
 
     if (!p) return;
-
     statusBox.style.display = "block";
 
-    // Aqui não tem erro: o que mudar no Firebase, muda aqui na hora
     if (p.status === "novo") {
       statusTexto.innerHTML = "⏳ Pedido recebido!";
     } else if (p.status === "preparo") {
-      statusTexto.innerHTML = "👨‍🍳 <strong>O lanche está sendo preparado!</strong>";
+      statusTexto.innerHTML = "👨‍🍳 <b>O lanche está sendo preparado!</b>";
     } else if (p.status === "saiu") {
-      statusTexto.innerHTML = "🛵 <strong>Saiu para entrega!</strong>";
-    } else if (p.status === "entregue") {
+      statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b>";
+    } else if (p.status === "entregue" || p.status === "finalizado") {
       statusTexto.innerHTML = "✅ Pedido finalizado!";
+      setTimeout(() => {
+        statusBox.style.display = "none";
+        localStorage.removeItem("pedidoId");
+      }, 10000);
     }
   });
 }
-  // 🛵 ENTREGA (MOTOBOY)
-  onValue(ref(db, "entregas_ativas"), (snapshot) => {
 
-    snapshot.forEach(item => {
-
-      let entrega = item.val();
-
-      if (entrega.pedidoId === id) {
-
-        document.getElementById("statusPedido").style.display = "block";
-        document.getElementById("statusTexto").innerText = "🛵 Saiu para entrega";
-
-      }
-
-    });
-
-  });
-
-
-  // ✅ FINALIZADO
-  onValue(ref(db, "entregas_finalizadas"), (snapshot) => {
-
-    snapshot.forEach(item => {
-
-      let entrega = item.val();
-
-      if (entrega.pedidoId === id) {
-
-        document.getElementById("statusTexto").innerText = "✅ Entregue";
-
-        setTimeout(() => {
-          localStorage.removeItem("pedidoId");
-          document.getElementById("statusPedido").style.display = "none";
-        }, 5000);
-
-      }
-
-    });
-
-  });
-
-}
-  window.addEventListener("load", () => {
-
+window.addEventListener("load", () => {
   let pedidoId = localStorage.getItem("pedidoId");
-
-  console.log("ID NO CELULAR:", pedidoId);
-
-  if (pedidoId) {
-    acompanharPedido(pedidoId);
-  }
-
+  if (pedidoId) acompanharPedido(pedidoId);
 });
 </script>
 
