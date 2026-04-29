@@ -242,6 +242,7 @@ window.enviarEntrega = function(id, botao) {
 
   });
 };
+    //botao preparo
 window.marcarPreparo = function(id, botao) {
 
   console.log("ID RECEBIDO:", id);
@@ -252,21 +253,12 @@ window.marcarPreparo = function(id, botao) {
 
     if (!snapshot.exists()) return;
 
-    let dados = snapshot.val();
-
-    // 🔥 ATUALIZA PEDIDOS
+    // 🔥 SOMENTE ISSO
     update(pedidoRef, {
       status: "preparo"
     });
 
-    // 🔥 ENVIA PRA ENTREGAS_ATIVAS (igual motoboy)
-    push(ref(db, "entregas_ativas"), {
-      ...dados,
-      pedidoId: id,
-      status: "preparo"
-    });
-
-    console.log("Mandou preparo pro Firebase");
+    console.log("Pedido em preparo");
 
     botao.disabled = true;
 
