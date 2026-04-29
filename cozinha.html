@@ -221,29 +221,47 @@ window.marcarPreparo = function(id, botao) {
 
 // BOTÃO MOTOBOY
 window.enviarEntrega = function(id, botao) {
-  if (!confirm("Enviar para entrega?")) return;
+    console.log("Botão clicado! ID do pedido:", id); // Teste 1
 
-  const pedidoRef = ref(db, "pedidos/" + id);
+    if (!confirm("Enviar para entrega?")) return;
 
-  get(pedidoRef).then((snapshot) => {
-    if (!snapshot.exists()) return;
-    const dados = snapshot.val();
+    const pedidoRef = ref(db, "pedidos/" + id);
 
-    // 1. Atualiza o status do pedido para o cliente ver
-    update(pedidoRef, { status: "saiu" }).then(() => {
-      
-      // 2. Envia para a pasta do motoboy usando o MESMO ID
-      return set(ref(db, "entregas_ativas/" + id), {
-        ...dados,
-        pedidoId: id,
-        status: "saiu"
-      });
+    get(pedidoRef).then((snapshot) => {
+        console.log("Snapshot recebido do Firebase:", snapshot.exists()); // Teste 2
 
-    }).then(() => {
-      botao.parentElement.remove();
-      alert("Enviado para o motoboy!");
-    }).catch(erro => console.error("Erro no envio:", erro));
-  });
+        if (!snapshot.exists()) {
+            alert("Pedido não encontrado no banco de dados!");
+            return;
+        }
+
+        const dados = snapshot.val();
+        console.log("Dados do pedido recuperados:", dados); // Teste 3
+
+        // 1. Atualiza o status original
+        update(pedidoRef, { status: "saiu" })
+            .then(() => {
+                console.log("Status 'saiu' atualizado com sucesso!"); // Teste 4
+
+                // 2. Envia para entregas_ativas
+                return set(ref(db, "entregas_ativas/" + id), {
+                    ...dados,
+                    pedidoId: id,
+                    status: "saiu"
+                });
+            })
+            .then(() => {
+                console.log("Cópia enviada para entregas_ativas!"); // Teste 5
+                botao.parentElement.remove();
+                alert("Motoboy avisado!");
+            })
+            .catch((erro) => {
+                console.error("ERRO DETECTADO:", erro); // Aqui aparecerá o Permission Denied se existir
+                alert("Erro ao enviar: " + erro.message);
+            });
+    }).catch((erro) => {
+        console.error("Erro ao buscar pedido:", erro);
+    });
 };
 // 🏪 FINALIZAR LOCAL
 window.finalizarLocal = function(id, botao) {
