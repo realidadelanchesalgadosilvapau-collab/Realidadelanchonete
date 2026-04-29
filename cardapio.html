@@ -345,27 +345,31 @@ ${chavePix}
 
 //termina aqui
   //acompanhe pedido
- function acompanharPedido(id) {
-
-  console.log("Escutando pedido:", id);
-
-  // 👨‍🍳 PEDIDO (COZINHA)
+function acompanharPedido(id) {
+  if (!id) return;
+  
+  // Ouvinte ÚNICO e EXCLUSIVO na pasta pedidos
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
+    const p = snapshot.val();
+    const statusTexto = document.getElementById("statusTexto");
+    const statusBox = document.getElementById("statusPedido");
 
-    if (!snapshot.exists()) return;
+    if (!p) return;
 
-    let p = snapshot.val();
+    statusBox.style.display = "block";
 
-    document.getElementById("statusPedido").style.display = "block";
-
-    let texto = "⏳ Pedido recebido";
-
-    if (p.status === "novo") texto = "⏳ Pedido recebido";
-    if (p.status === "preparo") texto = "👨‍🍳 Em preparo";
-
-    document.getElementById("statusTexto").innerText = texto;
+    // Aqui não tem erro: o que mudar no Firebase, muda aqui na hora
+    if (p.status === "novo") {
+      statusTexto.innerHTML = "⏳ Pedido recebido!";
+    } else if (p.status === "preparo") {
+      statusTexto.innerHTML = "👨‍🍳 <strong>O lanche está sendo preparado!</strong>";
+    } else if (p.status === "saiu") {
+      statusTexto.innerHTML = "🛵 <strong>Saiu para entrega!</strong>";
+    } else if (p.status === "entregue") {
+      statusTexto.innerHTML = "✅ Pedido finalizado!";
+    }
   });
-
+}
 
   // 🛵 ENTREGA (MOTOBOY)
   onValue(ref(db, "entregas_ativas"), (snapshot) => {
