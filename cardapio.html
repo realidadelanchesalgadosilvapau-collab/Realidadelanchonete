@@ -243,26 +243,40 @@ window.enviar = function() {
 /* 🔥 ACOMPANHAR PEDIDO (AQUI ESTÁ A CORREÇÃO) */
 function acompanharPedido(id) {
   if (!id) return;
+
+  const statusBox = document.getElementById("statusPedido");
+  const statusTexto = document.getElementById("statusTexto");
+
+  // OUVINTE ÚNICO: Ele fica "vigiando" o pedido no Firebase
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
+    if (!snapshot.exists()) {
+      statusBox.style.display = "none";
+      return;
+    }
+
     const p = snapshot.val();
-    const statusTexto = document.getElementById("statusTexto");
-    const statusBox = document.getElementById("statusPedido");
+    statusBox.style.display = "block"; // Garante que a caixa apareça
 
-    if (!p) return;
-    statusBox.style.display = "block";
-
+    // Lógica de mensagens baseada no que a Cozinha faz
     if (p.status === "novo") {
-      statusTexto.innerHTML = "⏳ Pedido recebido!";
-    } else if (p.status === "preparo") {
+      statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b><br>Aguardando a cozinha aceitar...";
+    } 
+    else if (p.status === "preparo") {
       statusTexto.innerHTML = "👨‍🍳 <b>O lanche está sendo preparado!</b>";
-    } else if (p.status === "saiu") {
-      statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b>";
-    } else if (p.status === "entregue" || p.status === "finalizado") {
-      statusTexto.innerHTML = "✅ Pedido finalizado!";
+      statusTexto.style.color = "#ff9800"; // Laranja
+    } 
+    else if (p.status === "saiu") {
+      statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b><br>O motoboy está a caminho.";
+      statusTexto.style.color = "#4caf50"; // Verde
+    } 
+    else if (p.status === "entregue" || p.status === "finalizado") {
+      statusTexto.innerHTML = "✅ <b>Pedido entregue! Bom apetite.</b>";
+      
+      // Apaga do celular do cliente após 1 minuto para não ocupar espaço
       setTimeout(() => {
-        statusBox.style.display = "none";
         localStorage.removeItem("pedidoId");
-      }, 10000);
+        statusBox.style.display = "none";
+      }, 60000); 
     }
   });
 }
