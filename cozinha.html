@@ -205,8 +205,21 @@ if (p.tipo === "local") {
 
   lista.prepend(div);
 });
+// BOTÃO PREPARO
+window.marcarPreparo = function(id, botao) {
+  const pedidoRef = ref(db, "pedidos/" + id);
 
-//motoboy
+  update(pedidoRef, {
+    status: "preparo" // Isso deve ser EXATAMENTE igual ao que o cardápio lê
+  }).then(() => {
+    botao.innerText = "👨‍🍳 Preparando...";
+    botao.style.background = "#ff9800";
+    botao.disabled = true;
+    console.log("Status 'preparo' enviado para o pedido: " + id);
+  }).catch(erro => alert("Erro ao atualizar preparo: " + erro.message));
+};
+
+// BOTÃO MOTOBOY
 window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
@@ -216,10 +229,10 @@ window.enviarEntrega = function(id, botao) {
     if (!snapshot.exists()) return;
     const dados = snapshot.val();
 
-    // 1. Atualiza o pedido original (para o cardápio ler)
+    // 1. Atualiza o status do pedido para o cliente ver
     update(pedidoRef, { status: "saiu" }).then(() => {
       
-      // 2. SALVA NA ENTREGA COM O MESMO ID (Usando SET em vez de PUSH)
+      // 2. Envia para a pasta do motoboy usando o MESMO ID
       return set(ref(db, "entregas_ativas/" + id), {
         ...dados,
         pedidoId: id,
@@ -228,19 +241,9 @@ window.enviarEntrega = function(id, botao) {
 
     }).then(() => {
       botao.parentElement.remove();
-      alert("Motoboy avisado!");
-    });
+      alert("Enviado para o motoboy!");
+    }).catch(erro => console.error("Erro no envio:", erro));
   });
-};
-    //botao preparo
-window.marcarPreparo = function(id, botao) {
-
-  update(ref(db, "pedidos/" + id), {
-    status: "preparo"
-  });
-
-  botao.disabled = true;
-
 };
 // 🏪 FINALIZAR LOCAL
 window.finalizarLocal = function(id, botao) {
