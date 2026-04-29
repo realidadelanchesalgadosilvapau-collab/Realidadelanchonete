@@ -124,7 +124,7 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, push, onValue,update, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 /* 🔥 CONFIG FIREBASE */
 const firebaseConfig = {
@@ -275,6 +275,7 @@ window.addEventListener("load", () => {
   let pedidoId = localStorage.getItem("pedidoId");
   if (pedidoId) acompanharPedido(pedidoId);
 });
+}
 </script>
 
 </body>
