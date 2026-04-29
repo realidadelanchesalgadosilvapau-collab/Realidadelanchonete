@@ -206,41 +206,39 @@ if (p.tipo === "local") {
   lista.prepend(div);
 });
 
-//botao motoboy
+//motoboy
     window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
-  let pedidoRef = ref(db, "pedidos/" + id);
+  const pedidoRef = ref(db, "pedidos/" + id);
 
   get(pedidoRef).then((snapshot) => {
     if (!snapshot.exists()) return;
 
     let dados = snapshot.val();
 
-    push(ref(db, "entregas_ativas"), {
-      ...dados,
-      pedidoId: id,
+    // 1. PRIMEIRO: Atualiza o status no pedido que o cliente está vendo
+    // Isso garante que o cardápio mude para "Saiu para entrega" imediatamente
+    update(pedidoRef, {
       status: "saiu"
-    })
-    .then(() => {
-
-      // 🔥 ATUALIZA O PEDIDO (ESSENCIAL)
-      update(ref(db, "pedidos/" + id), {
-        status: "saiu",
-        tipo: "delivery"
+    }).then(() => {
+      
+      // 2. DEPOIS: Envia para a pasta que o motoboy logado vai ver
+      // Como o cardápio não vai mais ler essa pasta, não haverá conflito
+      return push(ref(db, "entregas_ativas"), {
+        ...dados,
+        pedidoId: id,
+        status: "saiu"
       });
 
-      // 🔥 REMOVE DA TELA
+    }).then(() => {
+      // 3. FINALIZA: Remove da tela da cozinha
       botao.parentElement.remove();
-
       alert("Enviado para o motoboy!");
-
-    })
-    .catch((erro) => {
-      console.log("Erro:", erro);
-      alert("Erro ao enviar entrega");
+    }).catch((erro) => {
+      console.log("Erro no fluxo:", erro);
+      alert("Erro ao processar entrega");
     });
-
   });
 };
     //botao preparo
