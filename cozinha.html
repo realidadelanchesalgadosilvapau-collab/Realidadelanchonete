@@ -245,20 +245,25 @@ window.enviarEntrega = function(id, botao) {
     //botao preparo
 window.marcarPreparo = function(id, botao) {
 
-  console.log("ID RECEBIDO:", id);
-
   let pedidoRef = ref(db, "pedidos/" + id);
 
   get(pedidoRef).then((snapshot) => {
 
     if (!snapshot.exists()) return;
 
-    // 🔥 SOMENTE ISSO
+    let dados = snapshot.val();
+
+    // 🔥 ATUALIZA PEDIDO
     update(pedidoRef, {
       status: "preparo"
     });
 
-    console.log("Pedido em preparo");
+    // 🔥 ENVIA OU ATUALIZA NA ENTREGA
+    push(ref(db, "entregas_ativas"), {
+      ...dados,
+      pedidoId: id,
+      status: "preparo"
+    });
 
     botao.disabled = true;
 
