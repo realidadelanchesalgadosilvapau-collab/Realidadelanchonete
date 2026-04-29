@@ -220,16 +220,22 @@ window.enviar = function() {
 
   set(novoPedidoRef, {
     pedidoId: novoPedidoRef.key,
-    cliente, telefone, endereco: endereco || "Retirada",
-    pedido: resumo, total,
+    cliente, 
+    telefone, 
+    endereco: endereco || "Retirada",
+    pedido: resumo, 
+    total,
     hora: new Date().toLocaleTimeString(),
-    formaPagamento, status: "novo"
+    formaPagamento, 
+    status: "novo"
   }).then(() => {
     const idGerado = novoPedidoRef.key;
     localStorage.setItem("pedidoId", idGerado);
     
     // Limpa os campos para o próximo pedido
-    pedidos = []; total = 0; atualizarTela();
+    pedidos = []; 
+    total = 0; 
+    atualizarTela();
     document.getElementById("cliente").value = "";
     document.getElementById("telefone").value = "";
     document.getElementById("endereco").value = "";
@@ -238,16 +244,18 @@ window.enviar = function() {
     acompanharPedido(idGerado);
     
     alert("Pedido enviado com sucesso!");
+  }).catch((erro) => {
+    console.error("Erro ao enviar:", erro);
   });
+}; // <-- AQUI FECHA O window.enviar
 
-/* 🔥 ACOMPANHAR PEDIDO (AQUI ESTÁ A CORREÇÃO) */
+/* 🔥 ACOMPANHAR PEDIDO (FORA DO ENVIAR) */
 function acompanharPedido(id) {
   if (!id) return;
 
   const statusBox = document.getElementById("statusPedido");
   const statusTexto = document.getElementById("statusTexto");
 
-  // OUVINTE ÚNICO: Ele fica "vigiando" o pedido no Firebase
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
     if (!snapshot.exists()) {
       statusBox.style.display = "none";
@@ -255,24 +263,22 @@ function acompanharPedido(id) {
     }
 
     const p = snapshot.val();
-    statusBox.style.display = "block"; // Garante que a caixa apareça
+    statusBox.style.display = "block";
 
-    // Lógica de mensagens baseada no que a Cozinha faz
     if (p.status === "novo") {
-      statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b><br>Aguardando a cozinha aceitar...";
+      statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b><br>Aguardando a cozinha...";
     } 
     else if (p.status === "preparo") {
       statusTexto.innerHTML = "👨‍🍳 <b>O lanche está sendo preparado!</b>";
-      statusTexto.style.color = "#ff9800"; // Laranja
+      statusTexto.style.color = "#ff9800";
     } 
     else if (p.status === "saiu") {
       statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b><br>O motoboy está a caminho.";
-      statusTexto.style.color = "#4caf50"; // Verde
+      statusTexto.style.color = "#4caf50";
     } 
     else if (p.status === "entregue" || p.status === "finalizado") {
       statusTexto.innerHTML = "✅ <b>Pedido entregue! Bom apetite.</b>";
       
-      // Apaga do celular do cliente após 1 minuto para não ocupar espaço
       setTimeout(() => {
         localStorage.removeItem("pedidoId");
         statusBox.style.display = "none";
@@ -281,11 +287,13 @@ function acompanharPedido(id) {
   });
 }
 
+/* 🔥 CARREGA AO ABRIR O SITE */
 window.addEventListener("load", () => {
   let pedidoId = localStorage.getItem("pedidoId");
-  if (pedidoId) acompanharPedido(pedidoId);
+  if (pedidoId) {
+    acompanharPedido(pedidoId);
+  }
 });
-}
 </script>
 
 </body>
