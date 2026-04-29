@@ -207,40 +207,29 @@ if (p.tipo === "local") {
 });
 
 window.enviarEntrega = function(id, botao) {
-  if (!confirm("Enviar para entrega?")) return;
 
   let pedidoRef = ref(db, "pedidos/" + id);
 
   get(pedidoRef).then((snapshot) => {
+
     if (!snapshot.exists()) return;
 
     let dados = snapshot.val();
 
-    push(ref(db, "entregas_ativas"), {
-      ...dados,
-      pedidoId: id,
+    // 🔥 ATUALIZA (não cria outro)
+    update(ref(db, "entregas_ativas/" + dados.entregaId), {
       status: "saiu"
-    })
-    .then(() => {
-
-      // 🔥 ATUALIZA O PEDIDO (ESSENCIAL)
-      update(ref(db, "pedidos/" + id), {
-        status: "saiu",
-        tipo: "delivery"
-      });
-
-      // 🔥 REMOVE DA TELA
-      botao.parentElement.remove();
-
-      alert("Enviado para o motoboy!");
-
-    })
-    .catch((erro) => {
-      console.log("Erro:", erro);
-      alert("Erro ao enviar entrega");
     });
 
+    // atualiza pedido também
+    update(pedidoRef, {
+      status: "saiu"
+    });
+
+    botao.parentElement.remove();
+
   });
+
 };
     //botao preparo
 window.marcarPreparo = function(id, botao) {
@@ -253,16 +242,19 @@ window.marcarPreparo = function(id, botao) {
 
     let dados = snapshot.val();
 
-    // 🔥 ATUALIZA PEDIDO
-    update(pedidoRef, {
-      status: "preparo"
-    });
+    // cria entrega
+    let entregaRef = push(ref(db, "entregas_ativas"));
 
-    // 🔥 ENVIA OU ATUALIZA NA ENTREGA
-    push(ref(db, "entregas_ativas"), {
+    set(entregaRef, {
       ...dados,
       pedidoId: id,
       status: "preparo"
+    });
+
+    // salva id da entrega no pedido
+    update(pedidoRef, {
+      status: "preparo",
+      entregaId: entregaRef.key
     });
 
     botao.disabled = true;
