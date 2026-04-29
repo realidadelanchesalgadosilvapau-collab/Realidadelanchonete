@@ -206,30 +206,42 @@ if (p.tipo === "local") {
   lista.prepend(div);
 });
 
-window.enviarEntrega = function(id, botao) {
+//botao motoboy
+    window.enviarEntrega = function(id, botao) {
+  if (!confirm("Enviar para entrega?")) return;
 
   let pedidoRef = ref(db, "pedidos/" + id);
 
   get(pedidoRef).then((snapshot) => {
-
     if (!snapshot.exists()) return;
 
     let dados = snapshot.val();
 
-    // 🔥 ATUALIZA (não cria outro)
-    update(ref(db, "entregas_ativas/" + dados.entregaId), {
+    push(ref(db, "entregas_ativas"), {
+      ...dados,
+      pedidoId: id,
       status: "saiu"
-    });
+    })
+    .then(() => {
 
-    // atualiza pedido também
-    update(pedidoRef, {
-      status: "saiu"
-    });
+      // 🔥 ATUALIZA O PEDIDO (ESSENCIAL)
+      update(ref(db, "pedidos/" + id), {
+        status: "saiu",
+        tipo: "delivery"
+      });
 
-    botao.parentElement.remove();
+      // 🔥 REMOVE DA TELA
+      botao.parentElement.remove();
+
+      alert("Enviado para o motoboy!");
+
+    })
+    .catch((erro) => {
+      console.log("Erro:", erro);
+      alert("Erro ao enviar entrega");
+    });
 
   });
-
 };
     //botao preparo
 window.marcarPreparo = function(id, botao) {
