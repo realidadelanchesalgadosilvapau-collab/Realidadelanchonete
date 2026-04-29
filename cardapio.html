@@ -225,21 +225,24 @@ window.enviar = function() {
     hora: new Date().toLocaleTimeString(),
     formaPagamento, status: "novo"
   }).then(() => {
-    localStorage.setItem("pedidoId", novoPedidoRef.key);
-    acompanharPedido(novoPedidoRef.key);
+    const idGerado = novoPedidoRef.key;
+    localStorage.setItem("pedidoId", idGerado);
     
-    if (formaPagamento === "pix") {
-      window.open(`https://wa.me/11976681884?text=Pedido realizado! Total: R$ ${total}`);
-    } else {
-      alert("Pedido enviado!");
-    }
+    // Força a exibição da caixa de status
+    document.getElementById("statusPedido").style.display = "block";
+    document.getElementById("statusTexto").innerHTML = "⏳ Pedido enviado! Aguardando...";
 
+    // Ativa o monitoramento em tempo real
+    acompanharPedido(idGerado);
+
+    alert("Pedido enviado com sucesso!");
+
+    // Limpeza de campos
     pedidos = []; total = 0; atualizarTela();
     document.getElementById("cliente").value = "";
     document.getElementById("telefone").value = "";
     document.getElementById("endereco").value = "";
   });
-};
 
 /* 🔥 ACOMPANHAR PEDIDO (AQUI ESTÁ A CORREÇÃO) */
 function acompanharPedido(id) {
