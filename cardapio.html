@@ -228,20 +228,16 @@ window.enviar = function() {
     const idGerado = novoPedidoRef.key;
     localStorage.setItem("pedidoId", idGerado);
     
-    // Força a exibição da caixa de status
-    document.getElementById("statusPedido").style.display = "block";
-    document.getElementById("statusTexto").innerHTML = "⏳ Pedido enviado! Aguardando...";
-
-    // Ativa o monitoramento em tempo real
-    acompanharPedido(idGerado);
-
-    alert("Pedido enviado com sucesso!");
-
-    // Limpeza de campos
+    // Limpa os campos para o próximo pedido
     pedidos = []; total = 0; atualizarTela();
     document.getElementById("cliente").value = "";
     document.getElementById("telefone").value = "";
     document.getElementById("endereco").value = "";
+
+    // ATIVA O ACOMPANHAMENTO IMEDIATO
+    acompanharPedido(idGerado);
+    
+    alert("Pedido enviado com sucesso!");
   });
 
 /* 🔥 ACOMPANHAR PEDIDO (AQUI ESTÁ A CORREÇÃO) */
