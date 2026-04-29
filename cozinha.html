@@ -207,37 +207,28 @@ if (p.tipo === "local") {
 });
 
 //motoboy
-    window.enviarEntrega = function(id, botao) {
+   window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
   const pedidoRef = ref(db, "pedidos/" + id);
 
   get(pedidoRef).then((snapshot) => {
     if (!snapshot.exists()) return;
+    const dados = snapshot.val();
 
-    let dados = snapshot.val();
-
-    // 1. PRIMEIRO: Atualiza o status no pedido que o cliente está vendo
-    // Isso garante que o cardápio mude para "Saiu para entrega" imediatamente
-    update(pedidoRef, {
-      status: "saiu"
-    }).then(() => {
+    // 1. Atualiza o pedido original (para o cardápio ler)
+    update(pedidoRef, { status: "saiu" }).then(() => {
       
-      // 2. DEPOIS: Envia para a pasta que o motoboy logado vai ver
-      // Como o cardápio não vai mais ler essa pasta, não haverá conflito
-      return push(ref(db, "entregas_ativas"), {
+      // 2. SALVA NA ENTREGA COM O MESMO ID (Usando SET em vez de PUSH)
+      return set(ref(db, "entregas_ativas/" + id), {
         ...dados,
         pedidoId: id,
         status: "saiu"
       });
 
     }).then(() => {
-      // 3. FINALIZA: Remove da tela da cozinha
       botao.parentElement.remove();
-      alert("Enviado para o motoboy!");
-    }).catch((erro) => {
-      console.log("Erro no fluxo:", erro);
-      alert("Erro ao processar entrega");
+      alert("Motoboy avisado!");
     });
   });
 };
