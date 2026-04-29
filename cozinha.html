@@ -207,7 +207,7 @@ if (p.tipo === "local") {
 });
 
 //motoboy
-   window.enviarEntrega = function(id, botao) {
+window.enviarEntrega = function(id, botao) {
   if (!confirm("Enviar para entrega?")) return;
 
   const pedidoRef = ref(db, "pedidos/" + id);
