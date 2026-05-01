@@ -197,13 +197,27 @@ window.selecionar = function(index) {
   atualizarTela();
 };
 
-function atualizarTela() {
+//atualizar a tela cardapio 
+    function atualizarTela() {
   let lista = document.getElementById("lista");
   lista.innerHTML = "";
+  
+  // Exibe os itens do carrinho
   pedidos.forEach(item => {
     lista.innerHTML += `<div class="item">${item.nome}<br><small>${item.obs}</small></div>`;
   });
-  document.getElementById("total").innerText = total;
+
+  // 1. Pega o valor do campo endereço
+  let enderecoCampo = document.getElementById("endereco").value;
+
+  // 2. Define a taxa: 5.00 se houver endereço (e não for "Retirada"), senão 0.00
+  let taxaEntrega = (enderecoCampo && enderecoCampo.trim() !== "" && enderecoCampo !== "Retirada") ? 5.00 : 0.00;
+  
+  // 3. Calcula o total final somando a variável global 'total' com a taxa
+  let totalFinal = Number(total) + taxaEntrega;
+
+  // 4. Mostra o total formatado com 2 casas decimais (ex: 47.00)
+  document.getElementById("total").innerText = totalFinal.toFixed(2);
 }
 
 /* 🔥 ENVIAR PEDIDO */
@@ -295,6 +309,9 @@ function acompanharPedido(id) {
 
 /* 🔥 CARREGA AO ABRIR O SITE */
 window.addEventListener("load", () => {
+    // Faz o total atualizar enquanto o cliente digita o endereço
+document.getElementById("endereco").addEventListener("input", atualizarTela);
+    
   let pedidoId = localStorage.getItem("pedidoId");
   if (pedidoId) {
     acompanharPedido(pedidoId);
