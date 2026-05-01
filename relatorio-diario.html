@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="realidade.png">
+    <title>Relatório de Vendas do Dia</title>
+    <style>
+        body { font-family: Arial; background: #111; color: #fff; text-align: center; }
+        .box { background: #222; margin: 10px auto; padding: 15px; border-radius: 10px; max-width: 500px; border: 1px solid #333; }
+        .valor { font-size: 24px; font-weight: bold; color: #4caf50; margin-top: 5px; }
+        .motoboy-item { background: #333; padding: 10px; margin: 5px 0; border-radius: 5px; text-align: left; display: flex; justify-content: space-between; }
+        button { padding: 12px; margin: 10px; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        .btn-pdf { background: #2196F3; color: white; }
+        .reset { background: #f44336; color: white; }
+        input { padding: 10px; margin: 5px; border-radius: 5px; border: none; }
+    </style>
+</head>
+<body>
+
+<div id="loginBox">
+    <h2>🔐 Acesso Restrito</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="senha" placeholder="Senha">
+    <br>
+    <button onclick="login()" style="background: #4caf50; color: white; width: 200px;">Entrar</button>
+</div>
+
+<div id="conteudo" style="display:none;">
+    <h2>📊 Resumo do Dia</h2>
+
+    <div class="box">
+        💰 Total Bruto (Vendas)
+        <div id="vendas" class="valor">R$ 0,00</div>
+    </div>
+
+    <div class="box">
+        🛵 Total de Entregas
+        <div id="entregas" class="valor">0</div>
+    </div>
+
+    <div class="box">
+        💸 Total a Pagar Motoboys (R$ 5,00/cada)
+        <div id="motoboyTotal" class="valor">R$ 0,00</div>
+    </div>
+
+    <div class="box">
+        <h3>🛵 Produção por Motoboy</h3>
+        <div id="listaMotoboys"></div>
+    </div>
+
+    <button class="btn-pdf" onclick="gerarPDF()">📄 Gerar PDF do Dia</button>
+    <button class="reset" onclick="resetar()">🗑 Resetar e Iniciar Novo Período</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import { getDatabase, ref, onValue, get, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
+        authDomain: "realidade-60bdb.firebaseapp.com",
+        databaseURL: "https://realidade-60bdb-default-rtdb.firebaseio.com",
+        projectId: "realidade-60bdb",
+        storageBucket: "realidade-60bdb.firebasestorage.app",
+        messagingSenderId: "510520738222",
+        appId: "1:510520738222:web:272dc6dd89a53d5d02c83f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    window.login = function() {
+        let email = document.getElementById("email").value;
+        let senha = document.getElementById("senha").value;
+        signInWithEmailAndPassword(auth, email, senha).catch(e => alert("Erro: " + e.message));
+    };
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("conteudo").style.display = "block";
+
+            // 🔥 ESCUTA A PASTA DE RELATÓRIOS (VENDAS FINALIZADAS)
+            onValue(ref(db, "relatorio_completo"), (snapshot) => {
+                let dados = snapshot.val();
+                let bruto = 0;
+                let entregasQtd = 0;
+                let motoboys = {};
+
+                if (!dados) {
+                    limparTela();
+                    return;
+                }
+
+                Object.values(dados).forEach(p => {
+                    bruto += Number(p.total || 0);
+                    entregasQtd++;
+                    
+                    let mNome = p.motoboy || "Balcão/Sem Nome";
+                    if (!motoboys[mNome]) motoboys[mNome] = { qtd: 0, valor: 0 };
+                    motoboys[mNome].qtd++;
+                    motoboys[mNome].valor += 5; // R$ 5,00 por entrega
+                });
+
+                document.getElementById("vendas").innerText = "R$ " + bruto.toFixed(2);
+                document.getElementById("entregas").innerText = entregasQtd;
+                document.getElementById("motoboyTotal").innerText = "R$ " + (entregasQtd * 5).toFixed(2);
+
+                let htmlMotoboy = "";
+                Object.entries(motoboys).forEach(([nome, info]) => {
+                    htmlMotoboy += `<div class="motoboy-item">
+                        <span><b>${nome}</b></span>
+                        <span>${info.qtd} entregas | R$ ${info.valor.toFixed(2)}</span>
+                    </div>`;
+                });
+                document.getElementById("listaMotoboys").innerHTML = htmlMotoboy;
+            });
+        }
+    });
+
+    function limparTela() {
+        document.getElementById("vendas").innerText = "R$ 0,00";
+        document.getElementById("entregas").innerText = "0";
+        document.getElementById("motoboyTotal").innerText = "R$ 0,00";
+        document.getElementById("listaMotoboys").innerHTML = "Nenhuma venda registrada.";
+    }
+
+    window.gerarPDF = async function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20;
+
+        doc.setFontSize(18);
+        doc.text("RELATÓRIO DE VENDAS - " + new Date().toLocaleDateString(), 10, y);
+        y += 15;
+
+        const snap = await get(ref(db, "relatorio_completo"));
+        if (!snap.exists()) { alert("Nada para exportar"); return; }
+
+        doc.setFontSize(12);
+        snap.forEach(item => {
+            let p = item.val();
+            doc.text(`${p.hora} - ${p.cliente} - R$ ${p.total} (${p.motoboy || 'N/I'})`, 10, y);
+            y += 7;
+            if (y > 280) { doc.addPage(); y = 20; }
+        });
+
+        doc.save(`vendas_${new Date().toLocaleDateString()}.pdf`);
+    };
+
+    window.resetar = async function() {
+        if (prompt("Senha de Gerente:") !== "1234") return;
+        if (!confirm("Isso apagará todas as vendas da tela. Já salvou o PDF?")) return;
+        
+        await remove(ref(db, "relatorio_completo"));
+        alert("Dados resetados para um novo dia!");
+    };
+</script>
+</body>
+</html>
