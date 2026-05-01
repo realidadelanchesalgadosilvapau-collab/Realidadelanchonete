@@ -188,22 +188,34 @@ document.getElementById("cep").addEventListener("blur", function() {
                 const enderecoCompleto = `${dados.logradouro}, ${dados.bairro}, ${dados.localidade}`;
                 document.getElementById("endereco").value = enderecoCompleto;
                 
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoCompleto)}`)
+                // 1. Tenta buscar a localização exata pela rua
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoCompleto)}&limit=1`)
                     .then(r => r.json())
                     .then(geo => {
                         if (geo.length > 0) {
                             latDestino = parseFloat(geo[0].lat);
                             lonDestino = parseFloat(geo[0].lon);
-                            console.log("Localizado:", latDestino, lonDestino);
                         } else {
-                            latDestino = null; lonDestino = null;
+                            // 2. Se a rua falhar, tenta buscar apenas pelo CEP (Backup)
+                            return fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`)
+                                .then(r => r.json())
+                                .then(geoCEP => {
+                                    if (geoCEP.length > 0) {
+                                        latDestino = parseFloat(geoCEP[0].lat);
+                                        lonDestino = parseFloat(geoCEP[0].lon);
+                                    }
+                                });
                         }
+                    })
+                    .finally(() => {
+                        // Força a atualização da tela após qualquer tentativa
                         atualizarTela(); 
                     });
             }
         });
 });
 
+  //codigo do pagamento  
 window.selecionarPagamento = function(tipo, el) {
   formaPagamento = tipo;
   document.querySelectorAll(".pagamento").forEach(btn => btn.classList.remove("ativo"));
