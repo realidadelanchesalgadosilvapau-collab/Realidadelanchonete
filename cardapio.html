@@ -303,24 +303,30 @@ window.enviar = function() {
     hora: new Date().toLocaleTimeString(),
     formaPagamento, 
     status: "novo"
-  }).then(() => {
-      // 1. Zera as variáveis de controle
+}).then(() => {
+    // 1. Salva o ID para o cliente poder acompanhar
+    const idGerado = novoPedidoRef.key;
+    localStorage.setItem("pedidoId", idGerado);
+    
+    // 2. Zera as variáveis de controle (Apenas uma vez)
     pedidos = []; 
     total = 0; 
-    latDestino = null; // ESSENCIAL: Zera a localização anterior
-    lonDestino = null; // ESSENCIAL: Zera a localização anterior
+    latDestino = null; 
+    lonDestino = null;
 
-    // 2. Limpa os campos visuais
-    localStorage.setItem("pedidoId", novoPedidoRef.key);
-    pedidos = []; total = 0; latDestino = null; lonDestino = null;
+    // 3. Limpa todos os campos do formulário
     document.getElementById("cliente").value = "";
     document.getElementById("telefone").value = "";
     document.getElementById("endereco").value = "";
     document.getElementById("cep").value = "";
-      // atualizar a tela
+    if(document.getElementById("obs")) document.getElementById("obs").value = "";
+
+    // 4. Atualiza a tela (vai mostrar Produtos 0.00 / Taxa 0.00 / Total 0.00)
     atualizarTela();
-      
-    acompanharPedido(novoPedidoRef.key);
+    
+    // 5. Inicia o acompanhamento do status
+    acompanharPedido(idGerado);
+    
     alert("Pedido enviado com sucesso!");
   });
 };
