@@ -215,6 +215,12 @@ window.enviar = function() {
   if (!cliente || !telefone) { alert("Preencha nome e telefone"); return; }
   if (pedidos.length === 0) { alert("Adicione itens"); return; }
 
+  // --- LÓGICA DA TAXA DE ENTREGA ---
+  // Se o endereço estiver vazio ou for "Retirada", a taxa é 0. Senão, é 5.
+  let taxaEntrega = (endereco && endereco.trim() !== "") ? 5.00 : 0.00;
+  let totalComEntrega = Number(total) + taxaEntrega;
+  // ---------------------------------
+
   let resumo = pedidos.map(p => `${p.nome} (${p.obs || "sem obs"})`).join("\n");
   let novoPedidoRef = push(ref(db, "pedidos"));
 
@@ -224,7 +230,8 @@ window.enviar = function() {
     telefone, 
     endereco: endereco || "Retirada",
     pedido: resumo, 
-    total,
+    total: totalComEntrega, // <--- AQUI USAMOS O VALOR SOMADO
+    taxaEntrega: taxaEntrega, // Salvamos o valor da taxa separado para conferência
     hora: new Date().toLocaleTimeString(),
     formaPagamento, 
     status: "novo"
@@ -247,8 +254,7 @@ window.enviar = function() {
   }).catch((erro) => {
     console.error("Erro ao enviar:", erro);
   });
-}; // <-- AQUI FECHA O window.enviar
-
+};
 /* 🔥 ACOMPANHAR PEDIDO (FORA DO ENVIAR) */
 function acompanharPedido(id) {
   if (!id) return;
