@@ -170,6 +170,7 @@ window.abrirMapa = function(endereco) {
 };
 
 // ✅ FINALIZAR
+// ✅ FINALIZAR (Versão atualizada para o Relatório Diário)
 window.finalizar = function(id, botao) {
   if (!confirm("Marcar como entregue?")) return;
 
@@ -186,21 +187,45 @@ window.finalizar = function(id, botao) {
     if (!snapshot.exists()) return;
 
     let dados = snapshot.val();
- // 📦 HISTÓRICO (opcional, pode manter)
+
+    // 1. SALVA NA PASTA DO RELATÓRIO DIÁRIO (O novo HTML que criamos lê aqui)
+    // Usamos o 'id' original para evitar duplicidade
+    update(ref(db, "relatorio_completo/" + id), {
+      cliente: dados.cliente,
+      total: dados.total || 0,
+      hora: new Date().toLocaleTimeString(),
+      data: new Date().toLocaleDateString(),
+      motoboy: user.email, // Salva o email de quem entregou
+      status: "entregue"
+    });
+
+    // 2. MANTÉM O SEU HISTÓRICO GERAL (Se você quiser manter a pasta antiga)
     push(ref(db, "entregas_finalizadas"), {
       ...dados,
       status: "entregue",
-      data: new Date().toISOString()
-    });
-  // ✅ ATUALIZA PEDIDO CORRETO atualiza nome motoboy e entrega
-    update(ref(db, "pedidos/" + dados.pedidoId), {
-      status: "entregue",
+      data: new Date().toISOString(),
       motoboy: user.email
     });
- // 🔥 REMOVE DA FILA DO MOTOBOY
+
+    // 3. ATUALIZA O STATUS DO PEDIDO PARA O CLIENTE
+    // Verifique se o campo no seu banco é 'pedidoId' ou 'id'
+    if(dados.pedidoId) {
+        update(ref(db, "pedidos/" + dados.pedidoId), {
+          status: "entregue",
+          motoboy: user.email
+        });
+    }
+
+    // 4. REMOVE DA TELA DO MOTOBOY
     remove(ref(db, "entregas_ativas/" + id));
- // remove tela
+    
+    // 5. REMOVE O CARD DA TELA NA HORA
     botao.parentElement.remove();
+    
+    alert("Entrega registrada no relatório!");
+  }).catch((erro) => {
+      console.error(erro);
+      alert("Erro ao salvar no relatório.");
   });
 };
 
