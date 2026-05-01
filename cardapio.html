@@ -261,24 +261,25 @@ window.enviar = function() {
     hora: new Date().toLocaleTimeString(),
     formaPagamento, 
     status: "novo"
-  }).then(() => {
+}).then(() => {
     const idGerado = novoPedidoRef.key;
     localStorage.setItem("pedidoId", idGerado);
     
-    // Limpa os campos para o próximo pedido
+    // 1. Zera as variáveis
     pedidos = []; 
     total = 0; 
-    atualizarTela();
+
+    // 2. LIMPA OS CAMPOS DO HTML (Importante limpar o endereço aqui!)
     document.getElementById("cliente").value = "";
     document.getElementById("telefone").value = "";
-    document.getElementById("endereco").value = "";
+    document.getElementById("endereco").value = ""; // Isso faz a taxa voltar a 0
+    if(document.getElementById("cep")) document.getElementById("cep").value = "";
 
-    // ATIVA O ACOMPANHAMENTO IMEDIATO
+    // 3. ATUALIZA A TELA (Agora com tudo zerado, inclusive o endereço)
+    atualizarTela();
+
     acompanharPedido(idGerado);
-    
     alert("Pedido enviado com sucesso!");
-  }).catch((erro) => {
-    console.error("Erro ao enviar:", erro);
   });
 };
 /* 🔥 ACOMPANHAR PEDIDO (FORA DO ENVIAR) */
