@@ -136,7 +136,7 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, push,get, onValue,update, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, push, get, onValue, update, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 /* 🔥 CONFIG FIREBASE */
 const firebaseConfig = {
@@ -157,16 +157,26 @@ let pedidos = [];
 let produtos = [];
 let total = 0;
 let formaPagamento = "entrega";
-let chavePix = "SEU_PIX_AQUI"; 
-
-// CEP Auto-completar
-/* 📍 CONFIGURAÇÃO DA LANCHONETE (COLOQUE SUAS COORDENADAS AQUI) */
-    const MINHA_LAT = -23.5578102; // Exemplo: Pegue a sua no Google Maps
-const MINHA_LON = -46.4154916; // Exemplo: Pegue a sua no Google Maps
-
 let latDestino = null;
 let lonDestino = null;
 
+/* 📍 CONFIGURAÇÃO DA LANCHONETE */
+const MINHA_LAT = -23.5578102; 
+const MINHA_LON = -46.4154916;
+
+// --- ESSA FUNÇÃO ESTAVA FALTANDO NO SEU CÓDIGO ---
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371; 
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+/* 🔥 CEP AUTO-COMPLETAR */
 document.getElementById("cep").addEventListener("blur", function() {
     let cep = this.value.replace(/\D/g, "");
     if (cep.length !== 8) return;
@@ -175,11 +185,9 @@ document.getElementById("cep").addEventListener("blur", function() {
         .then(res => res.json())
         .then(dados => {
             if (!dados.erro) {
-                // Monta o endereço. Dica: Usar Rua + Cidade ajuda o mapa a não errar.
                 const enderecoCompleto = `${dados.logradouro}, ${dados.bairro}, ${dados.localidade}`;
                 document.getElementById("endereco").value = enderecoCompleto;
                 
-                // Busca a posição no mapa
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoCompleto)}`)
                     .then(r => r.json())
                     .then(geo => {
@@ -190,13 +198,11 @@ document.getElementById("cep").addEventListener("blur", function() {
                         } else {
                             latDestino = null; lonDestino = null;
                         }
-                        // Força a atualização da tela após receber a resposta do mapa
                         atualizarTela(); 
                     });
             }
         });
 });
-  //seleciona o pagamento
 
 window.selecionarPagamento = function(tipo, el) {
   formaPagamento = tipo;
@@ -204,7 +210,6 @@ window.selecionarPagamento = function(tipo, el) {
   el.classList.add("ativo");
 };
 
-/* 🔥 CARREGAR PRODUTOS */
 onValue(ref(db, "produtos"), (snapshot) => {
   produtos = [];
   snapshot.forEach(item => { produtos.push(item.val()); });
@@ -226,23 +231,16 @@ function carregarProdutos() {
   if (produtos.length > 0) document.getElementById("foto").src = produtos[0].imagem || "";
 }
 
-//windows selecionar 
-    window.selecionar = function(index) {
+window.selecionar = function(index) {
   let produto = produtos[index];
   document.getElementById("foto").src = produto.imagem || "";
   let obs = prompt("Observação?");
-  
   pedidos.push({ nome: produto.nome, preco: produto.preco, obs: obs || "" });
-
-  // Forçamos o JavaScript a entender que é um número para não dar erro no cálculo
   total += Number(produto.preco); 
-  
   atualizarTela();
 };
 
-// 🔥 FUNÇÃO ÚNICA: ATUALIZAR A TELA DO CARDÁPIO
 function atualizarTela() {
-    // 1. Limpa e mostra os itens no carrinho
     let lista = document.getElementById("lista");
     if (lista) {
         lista.innerHTML = "";
@@ -251,47 +249,26 @@ function atualizarTela() {
         });
     }
 
-    // 2. Pega o endereço e define a taxa padrão
     let enderecoCampo = document.getElementById("endereco").value;
-    let taxaEntrega = 5.00; // Começa com 5 por segurança
+    let taxaEntrega = 0;
 
-    // 3. REGRA DE CÁLCULO (Distância ou Retirada)
-    if (enderecoCampo && enderecoCampo !== "Retirada") {
-        // Se temos a localização do cliente, calculamos a distância
+    if (enderecoCampo && enderecoCampo.trim() !== "" && enderecoCampo !== "Retirada") {
         if (latDestino && lonDestino) {
             let km = calcularDistancia(MINHA_LAT, MINHA_LON, latDestino, lonDestino);
-            console.log("Distância real em KM:", km);
-
-            if (km <= 2.0) {
-                taxaEntrega = 3.00; // Até 2km é 3 reais
-            } else {
-                taxaEntrega = 5.00; // Acima disso é 5 reais
-            }
+            taxaEntrega = (km <= 2.0) ? 3.00 : 5.00;
         } else {
-            // Se ainda não achou a latitude (mapa carregando), mantém 5
-            taxaEntrega = 5.00;
+            taxaEntrega = 5.00; // Padrão se não achar GPS
         }
-    } else {
-        // Se for "Retirada" ou estiver vazio, a taxa é zero
-        taxaEntrega = 0.00;
     }
 
-    // 4. CÁLCULO FINAL
-    let valorApenasProdutos = Number(total); 
-    let valorTotalGeral = valorApenasProdutos + taxaEntrega;
+    let valorProdutos = Number(total);
+    let valorTotalGeral = valorProdutos + taxaEntrega;
 
-    // 5. ATUALIZA OS CAMPOS NO HTML
-    if(document.getElementById("valorProdutos")) {
-        document.getElementById("valorProdutos").innerText = valorApenasProdutos.toFixed(2);
-    }
-    if(document.getElementById("valorTaxa")) {
-        document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
-    }
-    if(document.getElementById("total")) {
-        document.getElementById("total").innerText = valorTotalGeral.toFixed(2);
-    }
+    document.getElementById("valorProdutos").innerText = valorProdutos.toFixed(2);
+    document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
+    document.getElementById("total").innerText = valorTotalGeral.toFixed(2);
 }
-/* 🔥 ENVIAR PEDIDO */
+
 window.enviar = function() {
   let cliente = document.getElementById("cliente").value;
   let telefone = document.getElementById("telefone").value;
@@ -300,12 +277,18 @@ window.enviar = function() {
   if (!cliente || !telefone) { alert("Preencha nome e telefone"); return; }
   if (pedidos.length === 0) { alert("Adicione itens"); return; }
 
-  // --- LÓGICA DA TAXA DE ENTREGA ---
-  // Se o endereço estiver vazio ou for "Retirada", a taxa é 0. Senão, é 5.
-  let taxaEntrega = (endereco && endereco.trim() !== "") ? 5.00 : 0.00;
-  let totalComEntrega = Number(total) + taxaEntrega;
-  // ---------------------------------
+  // --- CALCULA A TAXA REAL PARA O FIREBASE ---
+  let taxaEnvio = 0;
+  if (endereco && endereco !== "Retirada") {
+      if (latDestino && lonDestino) {
+          let km = calcularDistancia(MINHA_LAT, MINHA_LON, latDestino, lonDestino);
+          taxaEnvio = (km <= 2.0) ? 3.00 : 5.00;
+      } else {
+          taxaEnvio = 5.00;
+      }
+  }
 
+  let totalComEntrega = Number(total) + taxaEnvio;
   let resumo = pedidos.map(p => `${p.nome} (${p.obs || "sem obs"})`).join("\n");
   let novoPedidoRef = push(ref(db, "pedidos"));
 
@@ -315,80 +298,45 @@ window.enviar = function() {
     telefone, 
     endereco: endereco || "Retirada",
     pedido: resumo, 
-    total: totalComEntrega, // <--- AQUI USAMOS O VALOR SOMADO
-    taxaEntrega: taxaEntrega, // Salvamos o valor da taxa separado para conferência
+    total: totalComEntrega,
+    taxaEntrega: taxaEnvio,
     hora: new Date().toLocaleTimeString(),
     formaPagamento, 
     status: "novo"
-}).then(() => {
-    const idGerado = novoPedidoRef.key;
-    localStorage.setItem("pedidoId", idGerado);
-    
-    // 1. Zera as variáveis
-    pedidos = []; 
-    total = 0; 
-
-    // 2. LIMPA OS CAMPOS DO HTML (Importante limpar o endereço aqui!)
+  }).then(() => {
+    localStorage.setItem("pedidoId", novoPedidoRef.key);
+    pedidos = []; total = 0; latDestino = null; lonDestino = null;
     document.getElementById("cliente").value = "";
     document.getElementById("telefone").value = "";
-    document.getElementById("endereco").value = ""; // Isso faz a taxa voltar a 0
-    if(document.getElementById("cep")) document.getElementById("cep").value = "";
-
-    // 3. ATUALIZA A TELA (Agora com tudo zerado, inclusive o endereço)
+    document.getElementById("endereco").value = "";
+    document.getElementById("cep").value = "";
     atualizarTela();
-
-    acompanharPedido(idGerado);
+    acompanharPedido(novoPedidoRef.key);
     alert("Pedido enviado com sucesso!");
   });
 };
-/* 🔥 ACOMPANHAR PEDIDO (FORA DO ENVIAR) */
+
 function acompanharPedido(id) {
   if (!id) return;
-
   const statusBox = document.getElementById("statusPedido");
   const statusTexto = document.getElementById("statusTexto");
-
   onValue(ref(db, "pedidos/" + id), (snapshot) => {
-    if (!snapshot.exists()) {
-      statusBox.style.display = "none";
-      return;
-    }
-
+    if (!snapshot.exists()) return;
     const p = snapshot.val();
     statusBox.style.display = "block";
-
-    if (p.status === "novo") {
-      statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b><br>Aguardando a cozinha...";
-    } 
-    else if (p.status === "preparo") {
-      statusTexto.innerHTML = "👨‍🍳 <b>O lanche está sendo preparado!</b>";
-      statusTexto.style.color = "#ff9800";
-    } 
-    else if (p.status === "saiu") {
-      statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b><br>O motoboy está a caminho.";
-      statusTexto.style.color = "#4caf50";
-    } 
-    else if (p.status === "entregue" || p.status === "finalizado") {
-      statusTexto.innerHTML = "✅ <b>Pedido entregue! Bom apetite.</b>";
-      
-      setTimeout(() => {
-        localStorage.removeItem("pedidoId");
-        statusBox.style.display = "none";
-      }, 60000); 
-    }
+    if (p.status === "novo") statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b>";
+    else if (p.status === "preparo") statusTexto.innerHTML = "👨‍🍳 <b>Em preparo!</b>";
+    else if (p.status === "saiu") statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b>";
+    else if (p.status === "entregue") statusTexto.innerHTML = "✅ <b>Entregue!</b>";
   });
 }
 
-/* 🔥 CARREGA AO ABRIR O SITE */
 window.addEventListener("load", () => {
-    // Faz o total atualizar enquanto o cliente digita o endereço
-document.getElementById("endereco").addEventListener("input", atualizarTela);
-    
+  document.getElementById("endereco").addEventListener("input", atualizarTela);
   let pedidoId = localStorage.getItem("pedidoId");
-  if (pedidoId) {
-    acompanharPedido(pedidoId);
-  }
+  if (pedidoId) acompanharPedido(pedidoId);
 });
+
 </script>
 
 </body>
