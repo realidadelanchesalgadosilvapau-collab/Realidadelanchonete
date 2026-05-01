@@ -113,15 +113,26 @@ button {
 <div id="lista"></div>
 
 <hr>
-<p>Taxa de Entrega: R$ <span id="valorTaxa">0.00</span></p>
-<h3>Total: R$ <span id="total">0.00</span></h3>
-<div style="font-weight:bold;">
-  Total: R$ <span id="total">0</span>
+
+<!-- Resumo detalhado para o cliente -->
+<div style="background: #222; padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px solid #333;">
+  <p style="display: flex; justify-content: space-between; margin: 5px 0;">
+    <span>Produtos:</span> 
+    <span>R$ <span id="valorProdutos">0.00</span></span>
+  </p>
+  <p style="display: flex; justify-content: space-between; margin: 5px 0; color: #ffeb3b;">
+    <span>Taxa de Entrega:</span> 
+    <span>R$ <span id="valorTaxa">0.00</span></span>
+  </p>
+  <h3 style="display: flex; justify-content: space-between; margin: 10px 0; color: #4caf50; border-top: 1px solid #444; padding-top: 10px;">
+    <span>Total a Pagar:</span> 
+    <span>R$ <span id="total">0.00</span></span>
+  </h3>
 </div>
 
-<button onclick="enviar()">📤 Enviar Pedido</button>
-
-</div>
+<button onclick="enviar()" style="background: #4caf50; color: white; width: 100%; padding: 15px; font-size: 18px; border-radius: 8px; border: none; font-weight: bold;">
+  📤 Enviar Pedido
+</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
