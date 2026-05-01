@@ -304,13 +304,22 @@ window.enviar = function() {
     formaPagamento, 
     status: "novo"
   }).then(() => {
+      // 1. Zera as variáveis de controle
+    pedidos = []; 
+    total = 0; 
+    latDestino = null; // ESSENCIAL: Zera a localização anterior
+    lonDestino = null; // ESSENCIAL: Zera a localização anterior
+
+    // 2. Limpa os campos visuais
     localStorage.setItem("pedidoId", novoPedidoRef.key);
     pedidos = []; total = 0; latDestino = null; lonDestino = null;
     document.getElementById("cliente").value = "";
     document.getElementById("telefone").value = "";
     document.getElementById("endereco").value = "";
     document.getElementById("cep").value = "";
+      // atualizar a tela
     atualizarTela();
+      
     acompanharPedido(novoPedidoRef.key);
     alert("Pedido enviado com sucesso!");
   });
