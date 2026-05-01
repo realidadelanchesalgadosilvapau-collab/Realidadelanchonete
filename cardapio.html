@@ -160,17 +160,57 @@ let formaPagamento = "entrega";
 let chavePix = "SEU_PIX_AQUI"; 
 
 // CEP Auto-completar
+/* 📍 CONFIGURAÇÃO DA LANCHONETE (COLOQUE SUAS COORDENADAS AQUI) */
+const MINHA_LAT = -23.5505; // Exemplo: Pegue a sua no Google Maps
+const MINHA_LON = -46.6333; // Exemplo: Pegue a sua no Google Maps
+
+let latDestino = null;
+let lonDestino = null;
+
+// Função para calcular KM entre dois pontos
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371; 
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// 🔥 NOVO CEP AUTO-COMPLETAR COM CÁLCULO DE TAXA
 document.getElementById("cep").addEventListener("blur", function() {
-  let cep = this.value.replace(/\D/g, "");
-  if (cep.length !== 8) return;
-  fetch(`https://viacep.com.br/ws/${cep}/json/`)
-    .then(res => res.json())
-    .then(dados => {
-      if (!dados.erro) {
-        document.getElementById("endereco").value = dados.logradouro + ", " + dados.bairro + " - " + dados.localidade;
-      }
-    });
+    let cep = this.value.replace(/\D/g, "");
+    if (cep.length !== 8) return;
+
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(res => res.json())
+        .then(dados => {
+            if (!dados.erro) {
+                const enderecoCompleto = dados.logradouro + ", " + dados.bairro + " - " + dados.localidade;
+                document.getElementById("endereco").value = enderecoCompleto;
+                
+                // Busca Latitude e Longitude da rua do cliente (Grátis)
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoCompleto)}`)
+                    .then(r => r.json())
+                    .then(geo => {
+                        if (geo.length > 0) {
+                            latDestino = parseFloat(geo[0].lat);
+                            lonDestino = parseFloat(geo[0].lon);
+                        } else {
+                            // Se não achar por rua, tenta apenas pelo CEP
+                            latDestino = null; lonDestino = null;
+                        }
+                        atualizarTela(); // Recalcula a taxa na hora!
+                    }).catch(() => {
+                        latDestino = null; lonDestino = null;
+                        atualizarTela();
+                    });
+            }
+        });
 });
+  //seleciona o pagamento
 
 window.selecionarPagamento = function(tipo, el) {
   formaPagamento = tipo;
