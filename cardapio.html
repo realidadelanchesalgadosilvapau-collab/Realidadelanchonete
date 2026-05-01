@@ -185,31 +185,34 @@ document.getElementById("cep").addEventListener("blur", function() {
         .then(res => res.json())
         .then(dados => {
             if (!dados.erro) {
-                const enderecoCompleto = `${dados.logradouro}, ${dados.bairro}, ${dados.localidade}`;
-                document.getElementById("endereco").value = enderecoCompleto;
+                const rua = dados.logradouro;
+                const bairro = dados.bairro;
+                const cidade = dados.localidade;
+                document.getElementById("endereco").value = `${rua}, ${bairro} - ${cidade}`;
                 
-                // 1. Tenta buscar a localização exata pela rua
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoCompleto)}&limit=1`)
+                // Busca no mapa (Nominatim)
+                const busca = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${busca}&limit=1`)
                     .then(r => r.json())
                     .then(geo => {
                         if (geo.length > 0) {
                             latDestino = parseFloat(geo[0].lat);
                             lonDestino = parseFloat(geo[0].lon);
+                            console.log("📍 Localizado com sucesso!");
                         } else {
-                            // 2. Se a rua falhar, tenta buscar apenas pelo CEP (Backup)
+                            console.log("⚠️ Rua não achada, tentando pelo CEP...");
                             return fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`)
                                 .then(r => r.json())
-                                .then(geoCEP => {
-                                    if (geoCEP.length > 0) {
-                                        latDestino = parseFloat(geoCEP[0].lat);
-                                        lonDestino = parseFloat(geoCEP[0].lon);
+                                .then(geoCep => {
+                                    if (geoCep.length > 0) {
+                                        latDestino = parseFloat(geoCep[0].lat);//destino
+                                        lonDestino = parseFloat(geoCep[0].lon);//destino
                                     }
                                 });
                         }
                     })
                     .finally(() => {
-                        // Força a atualização da tela após qualquer tentativa
-                        atualizarTela(); 
+                        atualizarTela(); // Só atualiza depois que o mapa respondeu
                     });
             }
         });
@@ -264,23 +267,38 @@ function atualizarTela() {
     let enderecoCampo = document.getElementById("endereco").value;
     let taxaEntrega = 0;
 
+    // Se o endereço não estiver vazio e não for retirada
     if (enderecoCampo && enderecoCampo.trim() !== "" && enderecoCampo !== "Retirada") {
         if (latDestino && lonDestino) {
-            let km = calcularDistancia(MINHA_LAT, MINHA_LON, latDestino, lonDestino);
-            taxaEntrega = (km <= 2.0) ? 3.00 : 5.00;
+            // CÁLCULO DA DISTÂNCIA
+            let km = calcularDistancia(
+                Number(MINHA_LAT), Number(MINHA_LON), 
+                Number(latDestino), Number(lonDestino)
+            );
+            
+            console.log("📏 Distância calculada:", km.toFixed(2), "KM");
+
+            // A REGRA DE OURO:
+            if (km <= 2.0) {
+                taxaEntrega = 3.00;
+            } else {
+                taxaEntrega = 5.00;
+            }
         } else {
-            taxaEntrega = 5.00; // Padrão se não achar GPS
+            // Se o mapa falhou ou ainda está carregando, cobramos 5 por segurança
+            taxaEntrega = 5.00;
         }
+    } else {
+        taxaEntrega = 0; // Para "Retirada" ou campo vazio
     }
 
-    let valorProdutos = Number(total);
-    let valorTotalGeral = valorProdutos + taxaEntrega;
-
-    document.getElementById("valorProdutos").innerText = valorProdutos.toFixed(2);
+    // Atualiza os valores na tela
+    document.getElementById("valorProdutos").innerText = Number(total).toFixed(2);
     document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
-    document.getElementById("total").innerText = valorTotalGeral.toFixed(2);
+    document.getElementById("total").innerText = (Number(total) + taxaEntrega).toFixed(2);
 }
-
+    
+//funcao enviar pra cozinha
 window.enviar = function() {
   let cliente = document.getElementById("cliente").value;
   let telefone = document.getElementById("telefone").value;
