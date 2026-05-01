@@ -200,38 +200,48 @@ function carregarProdutos() {
   if (produtos.length > 0) document.getElementById("foto").src = produtos[0].imagem || "";
 }
 
-window.selecionar = function(index) {
+//windows selecionar 
+    window.selecionar = function(index) {
   let produto = produtos[index];
   document.getElementById("foto").src = produto.imagem || "";
   let obs = prompt("Observação?");
+  
   pedidos.push({ nome: produto.nome, preco: produto.preco, obs: obs || "" });
-  total += produto.preco;
+
+  // Forçamos o JavaScript a entender que é um número para não dar erro no cálculo
+  total += Number(produto.preco); 
+  
   atualizarTela();
 };
 
 //atualizar a tela cardapio 
-    function atualizarTela() {
+   function atualizarTela() {
   let lista = document.getElementById("lista");
   lista.innerHTML = "";
   
-  // Exibe os itens do carrinho
   pedidos.forEach(item => {
     lista.innerHTML += `<div class="item">${item.nome}<br><small>${item.obs}</small></div>`;
   });
 
-  // 1. Pega o valor do campo endereço
   let enderecoCampo = document.getElementById("endereco").value;
-
-  // 2. Define a taxa: 5.00 se houver endereço (e não for "Retirada"), senão 0.00
+  
+  // Se o campo endereço tiver texto e não for "Retirada", a taxa é 5
   let taxaEntrega = (enderecoCampo && enderecoCampo.trim() !== "" && enderecoCampo !== "Retirada") ? 5.00 : 0.00;
   
-  // 3. Calcula o total final somando a variável global 'total' com a taxa
-  let totalFinal = Number(total) + taxaEntrega;
+  // Usamos a variável global 'total' que você definiu no topo do script
+  let valorApenasProdutos = Number(total); 
+  let valorTotalComEntrega = valorApenasProdutos + taxaEntrega;
 
-  // 4. Mostra o total formatado com 2 casas decimais (ex: 47.00)
-  document.getElementById("total").innerText = totalFinal.toFixed(2);
+  // Atualiza os campos no HTML
+  if(document.getElementById("valorProdutos")) {
+      document.getElementById("valorProdutos").innerText = valorApenasProdutos.toFixed(2);
+  }
+  if(document.getElementById("valorTaxa")) {
+      document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
+  }
+  
+  document.getElementById("total").innerText = valorTotalComEntrega.toFixed(2);
 }
-
 /* 🔥 ENVIAR PEDIDO */
 window.enviar = function() {
   let cliente = document.getElementById("cliente").value;
