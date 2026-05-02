@@ -288,7 +288,7 @@ function atualizarTela() {
         
         // Se as coordenadas do cliente ainda não carregaram, mostramos 5.00 por padrão
         if (latDestino === null || lonDestino === null) {
-            taxaEntrega = 0;
+            taxaEntrega = 5,00;
         } else {
             // Se carregaram, calculamos a distância real
             let km = calcularDistancia(
