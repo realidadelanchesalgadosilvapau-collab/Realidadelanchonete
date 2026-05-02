@@ -374,7 +374,9 @@ function acompanharPedido(id) {
     const statusTexto = document.getElementById("statusTexto");
     const pedidoRef = ref(db, "pedidos/" + id);
 
-    const unsubscribe = onValue(pedidoRef, (snapshot) => {
+    let finalizado = false; // 🔥 CONTROLE
+
+    onValue(pedidoRef, (snapshot) => {
         if (!snapshot.exists()) { 
             statusBox.style.display = "none"; 
             return; 
@@ -395,12 +397,15 @@ function acompanharPedido(id) {
         else if (p.status === "entregue") {
             statusTexto.innerHTML = "✅ <b>Entregue!</b>";
 
-            // 🔥 AQUI ESTÁ A CORREÇÃO
-            setTimeout(() => {
-                statusBox.style.display = "none";
-                localStorage.removeItem("pedidoId");
-                unsubscribe(); // 🔥 PARA DE ESCUTAR
-            }, 40000);
+            // 🔥 EVITA REPETIR VÁRIAS VEZES
+            if (!finalizado) {
+                finalizado = true;
+
+                setTimeout(() => {
+                    statusBox.style.display = "none";
+                    localStorage.removeItem("pedidoId");
+                }, 40000);
+            }
         }
     });
 }
