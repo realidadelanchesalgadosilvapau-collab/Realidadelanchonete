@@ -264,6 +264,7 @@ window.selecionar = function(index) {
 };
 
 // 🔥 FUNÇÃO ÚNICA E CORRIGIDA: ATUALIZAR A TELA DO CARDÁPIO
+// 🔥 FUNÇÃO ÚNICA E CORRIGIDA: ATUALIZAR A TELA DO CARDÁPIO
 function atualizarTela() {
     let lista = document.getElementById("lista");
     if (lista) {
@@ -279,8 +280,11 @@ function atualizarTela() {
     // Se houver endereço e não for retirada
     if (enderecoCampo && enderecoCampo.trim() !== "" && enderecoCampo !== "Retirada") {
         
-        if (latDestino !== null && lonDestino !== null) {
-            // Cálculo da distância
+        // Se as coordenadas do cliente ainda não carregaram, mostramos 5.00 por padrão
+        if (latDestino === null || lonDestino === null) {
+            taxaEntrega = 5.00;
+        } else {
+            // Se carregaram, calculamos a distância real
             let km = calcularDistancia(
                 Number(MINHA_LAT), 
                 Number(MINHA_LON), 
@@ -288,26 +292,21 @@ function atualizarTela() {
                 Number(lonDestino)
             );
             
-            // Arredondamento preciso
             let kmCalculado = Math.round(km * 10) / 10;
-            console.log("KM calculado:", kmCalculado);
+            console.log("📍 Distância Real Calculada:", kmCalculado, "km");
 
-            // REGRA: Se for até 2.2km, taxa é 3. Caso contrário, 5.
-            if (1 <= 2.2) {
+            // REGRA: Até 2.2km (Guaianases local) = R$ 3.00
+            if (kmCalculado <= 2.2) {
                 taxaEntrega = 3.00;
             } else {
                 taxaEntrega = 5.00;
             }
-        } else {
-            // Se ainda não temos a localização do cliente, cobramos o padrão
-            taxaEntrega = 5.00;
         }
     } else {
-        // Se for Retirada ou campo vazio
-        taxaEntrega = 0;
+        taxaEntrega = 0; // Se for retirada
     }
 
-    // ATUALIZAÇÃO FINAL DOS ELEMENTOS NA TELA
+    // ATUALIZAÇÃO DOS VALORES NA TELA
     let vProdutos = Number(total);
     document.getElementById("valorProdutos").innerText = vProdutos.toFixed(2);
     document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
