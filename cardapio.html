@@ -310,25 +310,31 @@ function atualizarTela() {
     document.getElementById("total").innerText = (vProdutos + taxaEntrega).toFixed(2);
 }
 //funcao enviar pra cozinha
-window.enviar = function() {
-  let cliente = document.getElementById("cliente").value;
-  let telefone = document.getElementById("telefone").value;
-  let endereco = document.getElementById("endereco").value;
-
-  if (!cliente || !telefone) { alert("Preencha nome e telefone"); return; }
-  if (pedidos.length === 0) { alert("Adicione itens"); return; }
-
-  // --- CALCULA A TAXA REAL PARA O FIREBASE ---
+// --- CALCULA A TAXA REAL PARA O FIREBASE ---
   let taxaEnvio = 0;
   if (endereco && endereco !== "Retirada") {
-      if (latDestino && lonDestino) {
-          let km = calcularDistancia(MINHA_LAT, MINHA_LON, latDestino, lonDestino);
-          taxaEnvio = (km <= 2.0) ? 3.00 : 5.00;
+      if (latDestino !== null && lonDestino !== null) {
+          let km = calcularDistancia(
+              Number(MINHA_LAT), 
+              Number(MINHA_LON), 
+              Number(latDestino), 
+              Number(lonDestino)
+          );
+          
+          // Arredonda igualzinho na tela para não dar diferença
+          let kmFinalEnvio = Math.round(km * 10) / 10;
+
+          // Mesma margem de 2.2 que usamos na tela
+          if (kmFinalEnvio <= 2.2) {
+              taxaEnvio = 3.00;
+          } else {
+              taxaEnvio = 5.00;
+          }
       } else {
+          // Se o mapa falhar, o padrão é 5.00
           taxaEnvio = 5.00;
-          console.log("Cobrou 5 porque o KM deu: " + km);
       }
-  }
+  }  
 
   let totalComEntrega = Number(total) + taxaEnvio;
   let resumo = pedidos.map(p => `${p.nome} (${p.obs || "sem obs"})`).join("\n");
