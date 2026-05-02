@@ -282,7 +282,10 @@ function atualizarTela() {
         
         // Se as coordenadas do cliente ainda não carregaram, mostramos 5.00 por padrão
         if (latDestino === null || lonDestino === null) {
-            taxaEntrega = 5.00;
+    document.getElementById("valorTaxa").innerText = "Calculando...";
+    document.getElementById("total").innerText = vProdutos.toFixed(2);
+    return;
+}
         } else {
             // Se carregaram, calculamos a distância real
             let km = calcularDistancia(
@@ -296,7 +299,7 @@ function atualizarTela() {
             console.log("📍 Distância Real Calculada:", kmCalculado, "km");
 
             // REGRA: Até 2.2km (Guaianases local) = R$ 3.00
-            if (kmCalculado <= 2.2) {
+            if (kmCalculado <= 3.0) {
                 taxaEntrega = 3.00;
             } else {
                 taxaEntrega = 5.00;
@@ -366,18 +369,39 @@ window.enviar = function() {
 
 function acompanharPedido(id) {
     if (!id) return;
+
     const statusBox = document.getElementById("statusPedido");
     const statusTexto = document.getElementById("statusTexto");
     const pedidoRef = ref(db, "pedidos/" + id);
 
-    onValue(pedidoRef, (snapshot) => {
-        if (!snapshot.exists()) { statusBox.style.display = "none"; return; }
+    const unsubscribe = onValue(pedidoRef, (snapshot) => {
+        if (!snapshot.exists()) { 
+            statusBox.style.display = "none"; 
+            return; 
+        }
+
         const p = snapshot.val();
         statusBox.style.display = "block";
-        if (p.status === "novo") statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b>";
-        else if (p.status === "preparo") statusTexto.innerHTML = "👨‍🍳 <b>Sendo preparado!</b>";
-        else if (p.status === "saiu") statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b>";
-        else if (p.status === "entregue") statusTexto.innerHTML = "✅ <b>Entregue!</b>";
+
+        if (p.status === "novo") {
+            statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b>";
+        } 
+        else if (p.status === "preparo") {
+            statusTexto.innerHTML = "👨‍🍳 <b>Sendo preparado!</b>";
+        } 
+        else if (p.status === "saiu") {
+            statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b>";
+        } 
+        else if (p.status === "entregue") {
+            statusTexto.innerHTML = "✅ <b>Entregue!</b>";
+
+            // 🔥 AQUI ESTÁ A CORREÇÃO
+            setTimeout(() => {
+                statusBox.style.display = "none";
+                localStorage.removeItem("pedidoId");
+                unsubscribe(); // 🔥 PARA DE ESCUTAR
+            }, 40000);
+        }
     });
 }
 
