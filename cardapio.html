@@ -162,7 +162,7 @@ let lonDestino = null;
 
 /* 📍 CONFIGURAÇÃO DA LANCHONETE */
 const MINHA_LAT = -23.5578102; // minha coordenadas
-const MINHA_LON = -46.4154916;
+const MINHA_LON = -46.4154916; // minha coordenadas
 
 // --- ESSA FUNÇÃO ESTAVA FALTANDO NO SEU CÓDIGO ---
 function calcularDistancia(lat1, lon1, lat2, lon2) {
@@ -188,31 +188,39 @@ document.getElementById("cep").addEventListener("blur", function() {
                 const rua = dados.logradouro;
                 const bairro = dados.bairro;
                 const cidade = dados.localidade;
+                const estado = dados.uf;
+                
+                // Preenche o campo de endereço para o cliente ver
                 document.getElementById("endereco").value = `${rua}, ${bairro} - ${cidade}`;
                 
-                // Busca no mapa (Nominatim)
-                const busca = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${busca}&limit=1`)
+                // 🔥 A SUPER BUSCA: Tentamos ser o mais específicos possível para o mapa não errar
+                // Incluímos Rua, Cidade, Estado e o próprio CEP na busca do mapa
+                const buscaMapa = encodeURIComponent(`${rua}, ${cidade}, ${estado}, Brazil`);
+                
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`)
                     .then(r => r.json())
                     .then(geo => {
                         if (geo.length > 0) {
                             latDestino = parseFloat(geo[0].lat);
                             lonDestino = parseFloat(geo[0].lon);
-                            console.log("📍 Localizado com sucesso!");
+                            console.log("📍 Localizado:", latDestino, lonDestino);
                         } else {
-                            console.log("⚠️ Rua não achada, tentando pelo CEP...");
+                            // Plano B: Se não achou pela rua, tenta localizar pelo centro do CEP
                             return fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`)
                                 .then(r => r.json())
                                 .then(geoCep => {
                                     if (geoCep.length > 0) {
-                                        latDestino = parseFloat(geoCep[0].lat);//destino
-                                        lonDestino = parseFloat(geoCep[0].lon);//destino
+                                        latDestino = parseFloat(geoCep[0].lat);
+                                        lonDestino = parseFloat(geoCep[0].lon);
+                                        console.log("📍 Localizado pelo CEP (Plano B)");
                                     }
                                 });
                         }
                     })
+                    .catch(err => console.error("Erro no mapa:", err))
                     .finally(() => {
-                        atualizarTela(); // Só atualiza depois que o mapa respondeu
+                        // AGORA SIM, com as coordenadas na mão, calculamos a taxa
+                        atualizarTela(); 
                     });
             }
         });
