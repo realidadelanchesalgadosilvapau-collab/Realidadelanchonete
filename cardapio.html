@@ -176,33 +176,35 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-/* 🔥 CEP AUTO-COMPLETAR */
-document.getElementById("cep").addEventListener("blur", function() {
+/* 🔥 CEP AUTO-COMPLETAR */document.getElementById("cep").addEventListener("blur", function() {
     let cep = this.value.replace(/\D/g, "");
     if (cep.length !== 8) return;
 
     fetch(`https://viacep.com.br/ws/${cep}/json/`)
         .then(res => res.json())
         .then(dados => {
-         if (!dados.erro) {
+            if (!dados.erro) {
                 const rua = dados.logradouro;
                 const bairro = dados.bairro;
                 const cidade = dados.localidade;
                 const estado = dados.uf;
                 
-               // AGORA FORÇAMOS O BAIRRO E A CIDADE:
-const buscaMapa = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
-            
+                // 1. Preenche o campo de endereço na tela
+                document.getElementById("endereco").value = `${rua}, ${bairro} - ${cidade}`;
                 
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`).then(r => r.json())
-                    .then(r => r.json())
+                // 2. Prepara a busca do mapa com o bairro incluso
+                const buscaMapa = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
+                
+                // 3. Busca a localização
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`)
+                    .then(r => r.json()) // Apenas uma vez aqui!
                     .then(geo => {
                         if (geo.length > 0) {
                             latDestino = parseFloat(geo[0].lat);
                             lonDestino = parseFloat(geo[0].lon);
                             console.log("📍 Localizado:", latDestino, lonDestino);
                         } else {
-                            // Plano B: Se não achou pela rua, tenta localizar pelo centro do CEP
+                            // Plano B: Se não achou pela rua, tenta pelo CEP
                             return fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`)
                                 .then(r => r.json())
                                 .then(geoCep => {
@@ -216,7 +218,7 @@ const buscaMapa = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
                     })
                     .catch(err => console.error("Erro no mapa:", err))
                     .finally(() => {
-                        // AGORA SIM, com as coordenadas na mão, calculamos a taxa
+                        // 4. Calcula a taxa com as coordenadas obtidas
                         atualizarTela(); 
                     });
             }
