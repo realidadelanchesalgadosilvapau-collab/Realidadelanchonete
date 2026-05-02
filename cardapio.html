@@ -330,7 +330,7 @@ window.enviar = function() {
         if (latDestino !== null && lonDestino !== null) {
             let km = calcularDistancia(Number(MINHA_LAT), Number(MINHA_LON), Number(latDestino), Number(lonDestino));
             let kmFinalEnvio = Math.round(km * 10) / 10;
-            taxaEnvio = (kmFinalEnvio <= 2.2) ? 3.00 : 5.00;
+            taxaEnvio = (kmFinalEnvio <= 3.0) ? 3.00 : 5.00;
         } else {
             taxaEnvio = 5.00;
         }
@@ -400,7 +400,7 @@ function acompanharPedido(id) {
       setTimeout(() => {
         localStorage.removeItem("pedidoId");
         statusBox.style.display = "none";
-      }, 60000); 
+      }, 30000); 
     }
   });
 }
@@ -412,7 +412,7 @@ window.addEventListener("load", () => {
     if (pedidoId) acompanharPedido(pedidoId);
     
 });
-    }
+    
 
 </script>
 
