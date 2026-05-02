@@ -2,101 +2,44 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-    <!-- Esta é a linha que faz a mágica: -->
-   <link rel="icon" type="image/png" href="realidade.png">
-
-<title>Relatório Completo</title>
+<link rel="icon" type="image/png" href="realidade.png">
+<title>Relatório de Vendas</title>
 
 <style>
-body {
-  font-family: Arial;
-  background: #111;
-  color: #fff;
-  text-align: center;
-}
-
-.box {
-  background: #222;
-  margin: 15px;
-  padding: 20px;
-  border-radius: 10px;
-}
-
-.valor {
-  font-size: 26px;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-button {
-  padding: 10px;
-  margin: 5px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.reset {
-  background: red;
-  color: white;
-}
+body { font-family: Arial; background: #111; color: #fff; text-align: center; }
+.box { background: #222; margin: 15px; padding: 20px; border-radius: 10px; }
+.valor { font-size: 26px; font-weight: bold; margin-top: 10px; color: #4caf50; }
+button { padding: 10px; margin: 5px; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
+.reset { background: red; color: white; margin-top: 20px; }
+input { padding: 10px; margin: 5px; border-radius: 5px; border: none; }
+#loginBox { margin-top: 50px; }
 </style>
 </head>
-
 <body>
 
-<!-- 🔐 LOGIN -->
 <div id="loginBox">
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="senha" placeholder="Senha">
-  <button onclick="login()">Entrar</button>
+  <button onclick="login()" style="background: #e53935; color: white;">Entrar</button>
 </div>
 
-<!-- 🔓 CONTEÚDO -->
 <div id="conteudo" style="display:none;">
+  <h2>📊 Relatório de Vendas</h2>
 
-<h2>📊 Relatório</h2>
+  <div class="box">
+    💰 Faturamento Total (Pedidos Finalizados)
+    <div id="vendas" class="valor">R$ 0.00</div>
+  </div>
 
-<div class="box">
-  💰 Total de vendas
-  <div id="vendas" class="valor">R$ 0</div>
+  <button class="reset" onclick="resetar()">🗑 Resetar Período e Gerar PDF</button>
 </div>
 
-<div class="box">
-  🛵 Total de entregas
-  <div id="entregas" class="valor">0</div>
-</div>
-
-<div class="box">
-  💵 Total das entregas
-  <div id="valorEntregas" class="valor">R$ 0</div>
-</div>
-
-<div class="box">
-  💸 Pagamento motoboy
-  <div id="motoboy" class="valor">R$ 0</div>
-</div>
-
-<div class="box">
-  🛵 Entregas por motoboy
-  <div id="listaMotoboys"></div>
-</div>
-
-<button class="reset" onclick="resetar()">🗑 Resetar mês</button>
-
-</div>
-
-<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, onValue, get, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-// 🔥 CONFIG
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBZE-EDNUf1Li-kcUx_bhw51ho7dlqXbmM",
@@ -112,121 +55,68 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// 🔐 LOGIN
 window.login = function() {
   let email = document.getElementById("email").value;
   let senha = document.getElementById("senha").value;
-
-  signInWithEmailAndPassword(auth, email, senha)
-    .catch((e) => alert("Erro: " + e.message));
+  signInWithEmailAndPassword(auth, email, senha).catch((e) => alert("Erro: " + e.message));
 };
 
-// 🔓 LIBERA TELA APÓS LOGIN
 onAuthStateChanged(auth, (user) => {
   if (user) {
-
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("conteudo").style.display = "block";
 
-    // 🔥 CARREGA RELATÓRIO (SÓ DEPOIS DO LOGIN)
     onValue(ref(db, "pedidos"), (snapshot) => {
-
       let dados = snapshot.val();
-
       let totalVendas = 0;
-      let totalEntregas = 0;
-      let motoboys = {};
 
-      document.getElementById("vendas").innerText = "R$ 0";
-      document.getElementById("entregas").innerText = "0";
-      document.getElementById("valorEntregas").innerText = "R$ 0";
-      document.getElementById("motoboy").innerText = "R$ 0";
-      document.getElementById("listaMotoboys").innerHTML = "";
-
-      if (!dados) return;
+      if (!dados) {
+          document.getElementById("vendas").innerText = "R$ 0.00";
+          return;
+      }
 
       Object.values(dados).forEach(pedido => {
-
+        // Soma apenas pedidos que foram concluídos
         if (pedido.status === "finalizado" || pedido.status === "entregue") {
           totalVendas += Number(pedido.total || 0);
         }
-
-        if (pedido.tipo === "delivery" && pedido.status === "entregue") {
-          totalEntregas++;
-
-          let nome = pedido.motoboy || "Não informado";
-
-          if (!motoboys[nome]) {
-            motoboys[nome] = 0;
-          }
-
-          motoboys[nome]++;
-        }
-
       });
-
-      let valorMotoboy = totalEntregas * 5;
 
       document.getElementById("vendas").innerText = "R$ " + totalVendas.toFixed(2);
-      document.getElementById("entregas").innerText = totalEntregas;
-      document.getElementById("valorEntregas").innerText = "R$ " + totalVendas.toFixed(2);
-      document.getElementById("motoboy").innerText = "R$ " + valorMotoboy.toFixed(2);
-
-      let lista = "";
-
-      Object.entries(motoboys).forEach(([nome, qtd]) => {
-        let valor = qtd * 5;
-        lista += `<div>${nome} → ${qtd} entregas → R$ ${valor}</div>`;
-      });
-
-      document.getElementById("listaMotoboys").innerHTML = lista;
-
     });
-
   }
 });
 
-// 🔥 PDF
 async function gerarPDF() {
   const { jsPDF } = window.jspdf;
   let doc = new jsPDF();
   let y = 10;
-
-  doc.text("RELATÓRIO DE FECHAMENTO", 10, y);
+  doc.text("RELATÓRIO DE FECHAMENTO DE VENDAS", 10, y);
   y += 10;
 
   const snapshot = await get(ref(db, "pedidos"));
-
   if (!snapshot.exists()) return;
 
   snapshot.forEach((item) => {
     let p = item.val();
-
-    doc.text(`Cliente: ${p.cliente} - R$ ${p.total}`, 10, y);
-    y += 10;
+    if (p.status === "finalizado" || p.status === "entregue") {
+        doc.text(`${p.hora || ''} - Cliente: ${p.cliente} - R$ ${Number(p.total).toFixed(2)}`, 10, y);
+        y += 10;
+        if (y > 280) { doc.addPage(); y = 10; }
+    }
   });
-
-  doc.save("relatorio.pdf");
+  doc.save("relatorio_vendas.pdf");
 }
 
-// 🔥 RESET
 window.resetar = async function() {
-
-  let senha = prompt("Digite a senha:");
+  let senha = prompt("Digite a senha para RESETAR TUDO:");
   if (senha !== "1234") return;
-
-  if (!confirm("Gerar PDF e resetar?")) return;
+  if (!confirm("Isso apagará todos os pedidos do banco de dados. Deseja continuar?")) return;
 
   await gerarPDF();
-
   await remove(ref(db, "pedidos"));
-  await remove(ref(db, "entregas_ativas"));
-  await remove(ref(db, "entregas_finalizadas"));
-
-  alert("✅ Reset completo!");
+  alert("✅ Relatório resetado com sucesso!");
 };
-
 </script>
-
 </body>
 </html>
