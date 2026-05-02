@@ -184,18 +184,17 @@ document.getElementById("cep").addEventListener("blur", function() {
     fetch(`https://viacep.com.br/ws/${cep}/json/`)
         .then(res => res.json())
         .then(dados => {
-            if (!dados.erro) {
-               // Dentro do seu código de CEP, mude apenas esta parte:
-
-const rua = dados.logradouro;
-const cidade = dados.localidade;
-const bairro = dados.bairro; // Adicionamos o bairro na busca
-
-// AGORA FORÇAMOS O BAIRRO E A CIDADE:
+         if (!dados.erro) {
+                const rua = dados.logradouro;
+                const bairro = dados.bairro;
+                const cidade = dados.localidade;
+                const estado = dados.uf;
+                
+               // AGORA FORÇAMOS O BAIRRO E A CIDADE:
 const buscaMapa = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
-
-fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`)
-                    .then(r => r.json())
+            
+                
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`).then(r => r.json())
                     .then(geo => {
                         if (geo.length > 0) {
                             latDestino = parseFloat(geo[0].lat);
