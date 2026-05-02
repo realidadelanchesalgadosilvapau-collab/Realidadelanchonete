@@ -367,47 +367,43 @@ window.enviar = function() {
     });
 };
 
+/* 🔥 ACOMPANHAR PEDIDO (FORA DO ENVIAR) */
 function acompanharPedido(id) {
-    if (!id) return;
+  if (!id) return;
 
-    const statusBox = document.getElementById("statusPedido");
-    const statusTexto = document.getElementById("statusTexto");
-    const pedidoRef = ref(db, "pedidos/" + id);
+  const statusBox = document.getElementById("statusPedido");
+  const statusTexto = document.getElementById("statusTexto");
 
-    let finalizado = false; // 🔥 CONTROLE
+  onValue(ref(db, "pedidos/" + id), (snapshot) => {
+    if (!snapshot.exists()) {
+      statusBox.style.display = "none";
+      return;
+    }
 
-    onValue(pedidoRef, (snapshot) => {
-        if (!snapshot.exists()) { 
-            statusBox.style.display = "none"; 
-            return; 
-        }
+    const p = snapshot.val();
+    statusBox.style.display = "block";
 
-        const p = snapshot.val();
-        statusBox.style.display = "block";
-
-        if (p.status === "novo") {
-            statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b>";
-        } 
-        else if (p.status === "preparo") {
-            statusTexto.innerHTML = "👨‍🍳 <b>Sendo preparado!</b>";
-        } 
-        else if (p.status === "saiu") {
-            statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b>";
-        } 
-        else if (p.status === "entregue") {
-            statusTexto.innerHTML = "✅ <b>Entregue!</b>";
-
-            // 🔥 EVITA REPETIR VÁRIAS VEZES
-            if (!finalizado) {
-                finalizado = true;
-
-                setTimeout(() => {
-                    statusBox.style.display = "none";
-                    localStorage.removeItem("pedidoId");
-                }, 40000);
-            }
-        }
-    });
+    if (p.status === "novo") {
+      statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b><br>Aguardando a cozinha...";
+    } 
+    else if (p.status === "preparo") {
+      statusTexto.innerHTML = "👨‍🍳 <b>O lanche está sendo preparado!</b>";
+      statusTexto.style.color = "#ff9800";
+    } 
+    else if (p.status === "saiu") {
+      statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b><br>O motoboy está a caminho.";
+      statusTexto.style.color = "#4caf50";
+    } 
+    else if (p.status === "entregue" || p.status === "finalizado") {
+      statusTexto.innerHTML = "✅ <b>Pedido entregue! Bom apetite.</b>";
+      
+      setTimeout(() => {
+        localStorage.removeItem("pedidoId");
+        statusBox.style.display = "none";
+      }, 60000); 
+    }
+  });
+}
 
 
 window.addEventListener("load", () => {
