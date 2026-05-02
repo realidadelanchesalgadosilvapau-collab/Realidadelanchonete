@@ -309,121 +309,81 @@ function atualizarTela() {
     document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
     document.getElementById("total").innerText = (vProdutos + taxaEntrega).toFixed(2);
 }
-//funcao enviar pra cozinha
-// --- CALCULA A TAXA REAL PARA O FIREBASE ---
-  let taxaEnvio = 0;
-  if (endereco && endereco !== "Retirada") {
-      if (latDestino !== null && lonDestino !== null) {
-          let km = calcularDistancia(
-              Number(MINHA_LAT), 
-              Number(MINHA_LON), 
-              Number(latDestino), 
-              Number(lonDestino)
-          );
-          
-          // Arredonda igualzinho na tela para não dar diferença
-          let kmFinalEnvio = Math.round(km * 10) / 10;
+//cozinha
+    // 🔥 FUNÇÃO DE ENVIAR PARA O FIREBASE
+window.enviar = function() {
+    let cliente = document.getElementById("cliente").value;
+    let telefone = document.getElementById("telefone").value;
+    let endereco = document.getElementById("endereco").value;
 
-          // Mesma margem de 2.2 que usamos na tela
-          if (kmFinalEnvio <= 2.2) {
-              taxaEnvio = 3.00;
-          } else {
-              taxaEnvio = 5.00;
-          }
-      } else {
-          // Se o mapa falhar, o padrão é 5.00
-          taxaEnvio = 5.00;
-      }
-  }  
+    if (!cliente || !telefone) { alert("Preencha nome e telefone"); return; }
+    if (pedidos.length === 0) { alert("Adicione itens ao carrinho"); return; }
 
-  let totalComEntrega = Number(total) + taxaEnvio;
-  let resumo = pedidos.map(p => `${p.nome} (${p.obs || "sem obs"})`).join("\n");
-  let novoPedidoRef = push(ref(db, "pedidos"));
+    let taxaEnvio = 0;
+    if (endereco && endereco !== "Retirada") {
+        if (latDestino !== null && lonDestino !== null) {
+            let km = calcularDistancia(Number(MINHA_LAT), Number(MINHA_LON), Number(latDestino), Number(lonDestino));
+            let kmFinalEnvio = Math.round(km * 10) / 10;
+            taxaEnvio = (kmFinalEnvio <= 2.2) ? 3.00 : 5.00;
+        } else {
+            taxaEnvio = 5.00;
+        }
+    }
 
-  set(novoPedidoRef, {
-    pedidoId: novoPedidoRef.key,
-    cliente, 
-    telefone, 
-    endereco: endereco || "Retirada",
-    pedido: resumo, 
-    total: totalComEntrega,
-    taxaEntrega: taxaEnvio,
-    hora: new Date().toLocaleTimeString(),
-    formaPagamento, 
-    status: "novo"
-}).then(() => {
-    // 1. Salva o ID para o cliente poder acompanhar
-    const idGerado = novoPedidoRef.key;
-    localStorage.setItem("pedidoId", idGerado);
-    
-    // 2. Zera as variáveis de controle (Apenas uma vez)
-    pedidos = []; 
-    total = 0; 
-    latDestino = null; 
-    lonDestino = null;
+    let totalComEntrega = Number(total) + taxaEnvio;
+    let resumo = pedidos.map(p => `${p.nome} (${p.obs || "sem obs"})`).join("\n");
+    let novoPedidoRef = push(ref(db, "pedidos"));
 
-    // 3. Limpa todos os campos do formulário
-    document.getElementById("cliente").value = "";
-    document.getElementById("telefone").value = "";
-    document.getElementById("endereco").value = "";
-    document.getElementById("cep").value = "";
-    if(document.getElementById("obs")) document.getElementById("obs").value = "";
-
-    // 4. Atualiza a tela (vai mostrar Produtos 0.00 / Taxa 0.00 / Total 0.00)
-    atualizarTela();
-    
-    // 5. Inicia o acompanhamento do status
-    acompanharPedido(idGerado);
-    
-    alert("Pedido enviado com sucesso!");
-  });
+    set(novoPedidoRef, {
+        pedidoId: novoPedidoRef.key,
+        cliente, 
+        telefone, 
+        endereco: endereco || "Retirada",
+        pedido: resumo, 
+        total: totalComEntrega,
+        taxaEntrega: taxaEnvio,
+        hora: new Date().toLocaleTimeString(),
+        formaPagamento, 
+        status: "novo"
+    }).then(() => {
+        const idGerado = novoPedidoRef.key;
+        localStorage.setItem("pedidoId", idGerado);
+        
+        pedidos = []; total = 0; latDestino = null; lonDestino = null;
+        document.getElementById("cliente").value = "";
+        document.getElementById("telefone").value = "";
+        document.getElementById("endereco").value = "";
+        document.getElementById("cep").value = "";
+        
+        atualizarTela();
+        acompanharPedido(idGerado);
+        alert("Pedido enviado com sucesso!");
+    });
 };
 
 function acompanharPedido(id) {
-  if (!id) return;
-  const statusBox = document.getElementById("statusPedido");
-  const statusTexto = document.getElementById("statusTexto");
+    if (!id) return;
+    const statusBox = document.getElementById("statusPedido");
+    const statusTexto = document.getElementById("statusTexto");
+    const pedidoRef = ref(db, "pedidos/" + id);
 
-  // Criamos uma referência para o pedido específico
-  const pedidoRef = ref(db, "pedidos/" + id);
-
-  onValue(pedidoRef, (snapshot) => {
-    if (!snapshot.exists()) {
-      statusBox.style.display = "none";
-      return;
-    }
-    const p = snapshot.val();
-    statusBox.style.display = "block";
-
-    if (p.status === "novo") {
-      statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b><br>Aguardando a cozinha...";
-    } 
-    else if (p.status === "preparo") {
-      statusTexto.innerHTML = "👨‍🍳 <b>O lanche está sendo preparado!</b>";
-      statusTexto.style.color = "#ff9800";
-    } 
-    else if (p.status === "saiu") {
-      statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b><br>O motoboy está a caminho.";
-      statusTexto.style.color = "#4caf50";
-    } 
-    else if (p.status === "entregue" || p.status === "finalizado") {
-      statusTexto.innerHTML = "✅ <b>Pedido entregue! Bom apetite.</b>";
-      statusTexto.style.color = "#4caf50";
-      
-      // ESPERA 30 SEGUNDOS E SOME COM A MENSAGEM
-      setTimeout(() => {
-        statusBox.style.display = "none";
-        localStorage.removeItem("pedidoId"); // Limpa para o próximo pedido
-      }, 30000); 
-    }
-  });
+    onValue(pedidoRef, (snapshot) => {
+        if (!snapshot.exists()) { statusBox.style.display = "none"; return; }
+        const p = snapshot.val();
+        statusBox.style.display = "block";
+        if (p.status === "novo") statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b>";
+        else if (p.status === "preparo") statusTexto.innerHTML = "👨‍🍳 <b>Sendo preparado!</b>";
+        else if (p.status === "saiu") statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b>";
+        else if (p.status === "entregue") statusTexto.innerHTML = "✅ <b>Entregue!</b>";
+    });
 }
 
 window.addEventListener("load", () => {
-  document.getElementById("endereco").addEventListener("input", atualizarTela);
-  let pedidoId = localStorage.getItem("pedidoId");
-  if (pedidoId) acompanharPedido(pedidoId);
+    document.getElementById("endereco").addEventListener("input", atualizarTela);
+    let pedidoId = localStorage.getItem("pedidoId");
+    if (pedidoId) acompanharPedido(pedidoId);
 });
+
 
 </script>
 
