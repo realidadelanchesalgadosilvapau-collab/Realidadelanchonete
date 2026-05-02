@@ -159,7 +159,7 @@ let total = 0;
 let formaPagamento = "entrega";
 let latDestino = null;
 let lonDestino = null;
-let taxaEntregaGlobal = 0;
+//let taxaEntregaGlobal = 0;
 
 /* 📍 CONFIGURAÇÃO DA LANCHONETE (COORDINADAS REAIS GUAINASES) */
 
@@ -316,7 +316,7 @@ function atualizarTela() {
     let vProdutos = Number(total);
     document.getElementById("valorProdutos").innerText = vProdutos.toFixed(2);
     document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
-    taxaEntregaGlobal = taxaEntrega;
+   // taxaEntregaGlobal = taxaEntrega;
     document.getElementById("total").innerText = (vProdutos + taxaEntrega).toFixed(2);
 }
     //cozinha
