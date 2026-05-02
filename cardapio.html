@@ -264,7 +264,6 @@ window.selecionar = function(index) {
 
 // 🔥 FUNÇÃO ÚNICA E CORRIGIDA: ATUALIZAR A TELA DO CARDÁPIO
 function atualizarTela() {
-    // 1. Limpa e mostra os itens no carrinho
     let lista = document.getElementById("lista");
     if (lista) {
         lista.innerHTML = "";
@@ -273,17 +272,12 @@ function atualizarTela() {
         });
     }
 
-    // 2. Pega o endereço e define a taxa padrão inicial
     let enderecoCampo = document.getElementById("endereco").value;
     let taxaEntrega = 0;
 
-    // 3. REGRA DE CÁLCULO (Distância ou Retirada)
     if (enderecoCampo && enderecoCampo.trim() !== "" && enderecoCampo !== "Retirada") {
         
-        // Verificamos se temos as coordenadas (Latitude e Longitude)
         if (latDestino !== null && lonDestino !== null) {
-            
-            // Fazemos o cálculo real da distância
             let km = calcularDistancia(
                 Number(MINHA_LAT), 
                 Number(MINHA_LON), 
@@ -291,38 +285,29 @@ function atualizarTela() {
                 Number(lonDestino)
             );
             
-            // Mostra no console do navegador para conferência
-            console.log("Distância calculada:", km.toFixed(2), "KM");
+            // Arredonda para 1 casa decimal (Ex: 0.65 vira 0.7)
+            let kmFinao = Math.round(km * 10) / 10;
+            console.log("Distância exata:", km, "KM");
 
-            // A REGRA: Se for menor ou igual a 2km, cobra 3. Se não, cobra 5.
-            if (km <= 2.0) {
+            // Margem de segurança: se for até 2.2km, cobra 3 reais
+            if (kmFinao <= 2.2) {
                 taxaEntrega = 3.00;
             } else {
                 taxaEntrega = 5.00;
             }
         } else {
-            // Se o mapa ainda não respondeu a posição, mantemos 5.00 por segurança
+            // Se o mapa ainda não deu a coordenada, deixamos 5.00
             taxaEntrega = 5.00;
         }
     } else {
-        // Se o campo estiver vazio ou for "Retirada", a taxa é zero
-        taxaEntrega = 0.00;
+        taxaEntrega = 0;
     }
 
-    // 4. CÁLCULO DOS TOTAIS
-    let valorApenasProdutos = Number(total); 
-    let valorTotalGeral = valorApenasProdutos + taxaEntrega;
-
-    // 5. ATUALIZA OS CAMPOS NO HTML (DADOS NA TELA)
-    if(document.getElementById("valorProdutos")) {
-        document.getElementById("valorProdutos").innerText = valorApenasProdutos.toFixed(2);
-    }
-    if(document.getElementById("valorTaxa")) {
-        document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
-    }
-    if(document.getElementById("total")) {
-        document.getElementById("total").innerText = valorTotalGeral.toFixed(2);
-    }
+    // ATUALIZAÇÃO DOS VALORES
+    let vProdutos = Number(total);
+    document.getElementById("valorProdutos").innerText = vProdutos.toFixed(2);
+    document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
+    document.getElementById("total").innerText = (vProdutos + taxaEntrega).toFixed(2);
 }
 //funcao enviar pra cozinha
 window.enviar = function() {
