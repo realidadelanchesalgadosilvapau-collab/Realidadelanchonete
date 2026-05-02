@@ -195,7 +195,7 @@ document.getElementById("cep").addEventListener("blur", function() {
                 
                 // 🔥 A SUPER BUSCA: Tentamos ser o mais específicos possível para o mapa não errar
                 // Incluímos Rua, Cidade, Estado e o próprio CEP na busca do mapa
-                const buscaMapa = encodeURIComponent(`${rua}, ${cidade}, ${estado}, Brazil`);
+                const buscaMapa = encodeURIComponent(`${rua},${bairro}, ${cidade}, ${estado}, Brazil`);
                 
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`)
                     .then(r => r.json())
