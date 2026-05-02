@@ -185,19 +185,16 @@ document.getElementById("cep").addEventListener("blur", function() {
         .then(res => res.json())
         .then(dados => {
             if (!dados.erro) {
-                const rua = dados.logradouro;
-                const bairro = dados.bairro;
-                const cidade = dados.localidade;
-                const estado = dados.uf;
-                
-                // Preenche o campo de endereço para o cliente ver
-                document.getElementById("endereco").value = `${rua}, ${bairro} - ${cidade}`;
-                
-                // 🔥 A SUPER BUSCA: Tentamos ser o mais específicos possível para o mapa não errar
-                // Incluímos Rua, Cidade, Estado e o próprio CEP na busca do mapa
-                const buscaMapa = encodeURIComponent(`${rua},${bairro}, ${cidade}, ${estado}, Brazil`);
-                
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`)
+               // Dentro do seu código de CEP, mude apenas esta parte:
+
+const rua = dados.logradouro;
+const cidade = dados.localidade;
+const bairro = dados.bairro; // Adicionamos o bairro na busca
+
+// AGORA FORÇAMOS O BAIRRO E A CIDADE:
+const buscaMapa = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
+
+fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`)
                     .then(r => r.json())
                     .then(geo => {
                         if (geo.length > 0) {
