@@ -194,34 +194,40 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
                 document.getElementById("endereco").value = `${rua}, ${bairro} - ${cidade}`;
                 
                 // 2. Prepara a busca do mapa com o bairro incluso
-                const buscaMapa = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
-                
+                const numero = document.getElementById("numero")?.value || "";
+const buscaMapa = encodeURIComponent(`${rua}, ${numero}, ${bairro}, ${cidade}, Brazil`);
                 // 3. Busca a localização
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`)
-                    .then(r => r.json()) // Apenas uma vez aqui!
-                    .then(geo => {
-                        if (geo.length > 0) {
-                            latDestino = parseFloat(geo[0].lat);
-                            lonDestino = parseFloat(geo[0].lon);
-                            console.log("📍 Localizado:", latDestino, lonDestino);
-                        } else {
-                            // Plano B: Se não achou pela rua, tenta pelo CEP
-                            return fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`)
-                                .then(r => r.json())
-                                .then(geoCep => {
-                                    if (geoCep.length > 0) {
-                                        latDestino = parseFloat(geoCep[0].lat);
-                                        lonDestino = parseFloat(geoCep[0].lon);
-                                        console.log("📍 Localizado pelo CEP (Plano B)");
-                                    }
-                                });
-                        }
-                    })
-                    .catch(err => console.error("Erro no mapa:", err))
-                    .finally(() => {
-                        // 4. Calcula a taxa com as coordenadas obtidas
-                        atualizarTela(); 
-                    });
+               fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`)
+    .then(r => r.json())
+    .then(geo => {
+        if (geo.length > 0) {
+            latDestino = parseFloat(geo[0].lat);
+            lonDestino = parseFloat(geo[0].lon);
+            console.log("📍 Localizado:", latDestino, lonDestino);
+        } else {
+            return fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`)
+                .then(r => r.json())
+                .then(geoCep => {
+                    if (geoCep.length > 0) {
+                        latDestino = parseFloat(geoCep[0].lat);
+                        lonDestino = parseFloat(geoCep[0].lon);
+                        console.log("📍 Localizado pelo CEP (Plano B)");
+                    } else {
+                        console.log("❌ Não encontrou localização");
+                        latDestino = null;
+                        lonDestino = null;
+                    }
+                });
+        }
+    })
+    .catch(err => {
+        console.error("Erro no mapa:", err);
+        latDestino = null;
+        lonDestino = null;
+    })
+    .finally(() => {
+        atualizarTela();
+    });
             }
         });
 });
