@@ -78,7 +78,7 @@ onAuthStateChanged(auth, (user) => {
       Object.values(dados).forEach(pedido => {
         // Soma apenas pedidos que foram concluídos
         if (pedido.status === "finalizado" || pedido.status === "entregue") {
-          totalVendas += Number(pedido.total || 0);
+         totalVendas += Number(pedido.total || 0) - Number(pedido.taxaEntrega || 0);
         }
       });
 
@@ -100,7 +100,7 @@ async function gerarPDF() {
   snapshot.forEach((item) => {
     let p = item.val();
     if (p.status === "finalizado" || p.status === "entregue") {
-        doc.text(`${p.hora || ''} - Cliente: ${p.cliente} - R$ ${Number(p.total).toFixed(2)}`, 10, y);
+        doc.text(`${p.hora || ''} - Cliente: ${p.cliente} - R$ ${(Number(p.total) - Number(p.taxaEntrega || 0)).toFixed(2)}`, 10, y);
         y += 10;
         if (y > 280) { doc.addPage(); y = 10; }
     }
