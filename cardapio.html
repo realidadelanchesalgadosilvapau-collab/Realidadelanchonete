@@ -282,10 +282,7 @@ function atualizarTela() {
         
         // Se as coordenadas do cliente ainda não carregaram, mostramos 5.00 por padrão
         if (latDestino === null || lonDestino === null) {
-    document.getElementById("valorTaxa").innerText = "Calculando...";
-    document.getElementById("total").innerText = vProdutos.toFixed(2);
-    return;
-}
+            taxaEntrega = 5.00;
         } else {
             // Se carregaram, calculamos a distância real
             let km = calcularDistancia(
@@ -299,7 +296,7 @@ function atualizarTela() {
             console.log("📍 Distância Real Calculada:", kmCalculado, "km");
 
             // REGRA: Até 2.2km (Guaianases local) = R$ 3.00
-            if (kmCalculado <= 3.0) {
+            if (kmCalculado <= 2.2) {
                 taxaEntrega = 3.00;
             } else {
                 taxaEntrega = 5.00;
@@ -330,7 +327,7 @@ window.enviar = function() {
         if (latDestino !== null && lonDestino !== null) {
             let km = calcularDistancia(Number(MINHA_LAT), Number(MINHA_LON), Number(latDestino), Number(lonDestino));
             let kmFinalEnvio = Math.round(km * 10) / 10;
-            taxaEnvio = (kmFinalEnvio <= 3.0) ? 3.00 : 5.00;
+            taxaEnvio = (kmFinalEnvio <= 2.2) ? 3.00 : 5.00;
         } else {
             taxaEnvio = 5.00;
         }
@@ -367,52 +364,33 @@ window.enviar = function() {
     });
 };
 
-/* 🔥 ACOMPANHAR PEDIDO (FORA DO ENVIAR) */
 function acompanharPedido(id) {
-  if (!id) return;
+    if (!id) return;
+    const statusBox = document.getElementById("statusPedido");
+    const statusTexto = document.getElementById("statusTexto");
+    const pedidoRef = ref(db, "pedidos/" + id);
 
-  const statusBox = document.getElementById("statusPedido");
-  const statusTexto = document.getElementById("statusTexto");
-
-  onValue(ref(db, "pedidos/" + id), (snapshot) => {
-    if (!snapshot.exists()) {
-      statusBox.style.display = "none";
-      return;
-    }
-
-    const p = snapshot.val();
-    statusBox.style.display = "block";
-
-    if (p.status === "novo") {
-      statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b><br>Aguardando a cozinha...";
-    } 
-    else if (p.status === "preparo") {
-      statusTexto.innerHTML = "👨‍🍳 <b>O lanche está sendo preparado!</b>";
-      statusTexto.style.color = "#ff9800";
-    } 
-    else if (p.status === "saiu") {
-      statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b><br>O motoboy está a caminho.";
-      statusTexto.style.color = "#4caf50";
-    } 
-    else if (p.status === "entregue" || p.status === "finalizado") {
-      statusTexto.innerHTML = "✅ <b>Pedido entregue! Bom apetite.</b>";
-      
-      setTimeout(() => {
+    onValue(pedidoRef, (snapshot) => {
+        if (!snapshot.exists()) { statusBox.style.display = "none"; return; }
+        const p = snapshot.val();
+        statusBox.style.display = "block";
+        if (p.status === "novo") statusTexto.innerHTML = "⏳ <b>Pedido recebido!</b>";
+        else if (p.status === "preparo") statusTexto.innerHTML = "👨‍🍳 <b>Sendo preparado!</b>";
+        else if (p.status === "saiu") statusTexto.innerHTML = "🛵 <b>Saiu para entrega!</b>";
+        else if (p.status === "entregue") statusTexto.innerHTML = "✅ <b>Entregue!</b>";
+         setTimeout(() => {
         localStorage.removeItem("pedidoId");
         statusBox.style.display = "none";
-      }, 30000); 
-    }
-  });
+    },30000);
+    });
 }
-
 
 window.addEventListener("load", () => {
     document.getElementById("endereco").addEventListener("input", atualizarTela);
     let pedidoId = localStorage.getItem("pedidoId");
     if (pedidoId) acompanharPedido(pedidoId);
-    
 });
-    
+
 
 </script>
 
