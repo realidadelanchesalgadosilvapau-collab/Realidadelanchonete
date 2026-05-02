@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Controle Geral</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #111;
+    color: white;
+    text-align: center;
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+}
+
+button {
+    width: 100%;
+    padding: 18px;
+    margin: 12px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.admin { background: #4caf50; }
+.diario { background: #ff9800; }
+.completo { background: #2196f3; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>👨‍💼 Controle do Sistema</h2>
+
+<button class="admin" onclick="ir('admin.html')">
+🛠 Controle seus produtos<br>
+<small>Adicionar / Editar / Excluir</small>
+</button>
+
+<button class="diario" onclick="ir('relatorio-diario.html')">
+🛵 Relatório Diário (Motoboy)
+</button>
+
+<button class="completo" onclick="ir('relatorio-completo.html')">
+📊 Relatório Completo
+</button>
+
+</div>
+
+<script>
+function ir(pagina) {
+    window.location.href = pagina;
+}
+</script>
+
+</body>
+</html>
