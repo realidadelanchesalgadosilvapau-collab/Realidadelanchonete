@@ -283,9 +283,8 @@ function atualizarTela() {
                 Number(MINHA_LON), 
                 Number(latDestino), 
                 Number(lonDestino)
-                console.log("Calculando de: " + MINHA_LAT + " até: " + latDestino + " | Distância: " + km + "km");
             );
-            
+            console.log("Calculando de: " + MINHA_LAT + " até: " + latDestino + " | Distância: " + km + "km");
             // Arredonda para 1 casa decimal (Ex: 0.65 vira 0.7)
             let kmFinao = Math.round(km * 10) / 10;
             console.log("Distância exata:", km, "KM");
