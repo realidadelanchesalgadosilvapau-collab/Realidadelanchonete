@@ -275,37 +275,38 @@ function atualizarTela() {
     let enderecoCampo = document.getElementById("endereco").value;
     let taxaEntrega = 0;
 
-if (enderecoCampo && enderecoCampo.trim() !== "" && enderecoCampo !== "Retirada") {
+    // Se houver endereço e não for retirada
+    if (enderecoCampo && enderecoCampo.trim() !== "" && enderecoCampo !== "Retirada") {
         
         if (latDestino !== null && lonDestino !== null) {
+            // Cálculo da distância
             let km = calcularDistancia(
                 Number(MINHA_LAT), 
                 Number(MINHA_LON), 
                 Number(latDestino), 
                 Number(lonDestino)
             );
-
-            // 🚩 O TESTE ESTÁ AQUI:
-            alert("O sistema calculou que a distância é: " + km.toFixed(2) + " km");
             
-            // Arredonda para 1 casa decimal
-            let kmFinao = Math.round(km * 10) / 10;
-            console.log("Distância exata:", km, "KM");
+            // Arredondamento preciso
+            let kmCalculado = Math.round(km * 10) / 10;
+            console.log("KM calculado:", kmCalculado);
 
-            // Margem de segurança: se for até 2.2km, cobra 3 reais
-            if (kmFinao <= 2.2) {
+            // REGRA: Se for até 2.2km, taxa é 3. Caso contrário, 5.
+            if (kmCalculado <= 2.2) {
                 taxaEntrega = 3.00;
             } else {
                 taxaEntrega = 5.00;
             }
         } else {
+            // Se ainda não temos a localização do cliente, cobramos o padrão
             taxaEntrega = 5.00;
         }
     } else {
+        // Se for Retirada ou campo vazio
         taxaEntrega = 0;
     }
 
-    // ATUALIZAÇÃO DOS VALORES
+    // ATUALIZAÇÃO FINAL DOS ELEMENTOS NA TELA
     let vProdutos = Number(total);
     document.getElementById("valorProdutos").innerText = vProdutos.toFixed(2);
     document.getElementById("valorTaxa").innerText = taxaEntrega.toFixed(2);
