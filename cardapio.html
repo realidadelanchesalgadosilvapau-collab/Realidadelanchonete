@@ -279,6 +279,7 @@ function atualizarTela() {
         
         if (latDestino !== null && lonDestino !== null) {
             let km = calcularDistancia(
+                console.log("Calculando de: " + MINHA_LAT + " até: " + latDestino + " | Distância: " + km + "km");
                 Number(MINHA_LAT), 
                 Number(MINHA_LON), 
                 Number(latDestino), 
