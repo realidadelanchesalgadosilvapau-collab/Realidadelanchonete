@@ -195,6 +195,7 @@ const buscaMapa = encodeURIComponent(`${rua}, ${bairro}, ${cidade}, Brazil`);
             
                 
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${buscaMapa}&limit=1`).then(r => r.json())
+                    .then(r => r.json())
                     .then(geo => {
                         if (geo.length > 0) {
                             latDestino = parseFloat(geo[0].lat);
